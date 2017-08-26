@@ -15,6 +15,7 @@ import java.util.List;
 import me.gavin.svg.editor.model.IPath;
 import me.gavin.svg.editor.model.Vector;
 import me.gavin.svg.editor.util.L;
+import me.gavin.svg.editor.util.VectorParser;
 
 /**
  * 用来显示 svg
@@ -45,13 +46,23 @@ public class VectorView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        L.e("onDraw");
         if (!canDraw()) {
             return;
         }
 
         for (int i = 0; i < mVector.getPathList().size(); i++) {
+            Path path = mPaths.get(i);
+            path.reset();
+
+            float scale = getWidth() * 1.0f / mVector.getViewportWidth();
+            VectorParser.transform(path, mVector.getPathList().get(i).getPath(), scale);
+
+            mPaths.add(path);
+        }
+
+        for (int i = 0; i < mVector.getPathList().size(); i++) {
             canvas.drawPath(mPaths.get(i), mPaints.get(i));
-            L.e("onDraw - " + getWidth());
         }
     }
 
@@ -64,16 +75,10 @@ public class VectorView extends View {
                 Paint paint = new Paint();
                 paint.setColor(Color.RED);
                 paint.setAntiAlias(true);
-                paint.setStrokeWidth(1);
                 paint.setStyle(Paint.Style.FILL);
                 mPaints.add(paint);
 
-                Path path = new Path();
-                path.moveTo(0, 0);
-                path.lineTo((float) Math.random() * 512, (float) Math.random() * 512);
-                path.lineTo((float) Math.random() * 512, (float) Math.random() * 512);
-                path.close();
-                mPaths.add(path);
+                mPaths.add(new Path());
             }
         }
         postInvalidate();

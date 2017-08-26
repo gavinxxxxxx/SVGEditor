@@ -2,6 +2,8 @@ package me.gavin.svg.editor.util;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.support.annotation.XmlRes;
 import android.util.Xml;
 
@@ -11,6 +13,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.gavin.svg.editor.model.IPath;
 import me.gavin.svg.editor.model.Vector;
@@ -37,6 +42,9 @@ public class VectorParser {
         return parse(parser);
     }
 
+    /**
+     * 解析 xml todo 基本形状
+     */
     private static Vector parse(XmlPullParser parser) throws XmlPullParserException, IOException {
         Vector vector = null;
         while (parser.getEventType() != XmlResourceParser.END_DOCUMENT) {
@@ -53,7 +61,8 @@ public class VectorParser {
                     }
                 } else if (vector != null && "path".equals(parser.getName())) {
                     IPath path = new IPath();
-                    path.setPath(parser.getAttributeValue(null, "d"));
+                    String d = parser.getAttributeValue(null, "d");
+                    path.setPath(pathFormat(d));
                     path.setFill(parser.getAttributeValue(null, "fill"));
                     if (vector.getPathList() == null) {
                         vector.setPathList(new ArrayList<IPath>());
@@ -65,4 +74,64 @@ public class VectorParser {
         }
         return vector;
     }
+
+    /**
+     * 路径格式化
+     */
+    public static String pathFormat(String path) {
+        // 逗号全部转换成空格
+        path = path.trim().replaceAll(",", " ");
+        // 负参分离
+        String rex = "[0-9|.]-";
+        Pattern pattern = Pattern.compile(rex);
+        Matcher matcher = pattern.matcher(path);
+        while (matcher.find()) {
+            String group = matcher.group();
+            path = path.replaceFirst(group, group.charAt(0) + " -");
+        }
+        // 点参分离
+        rex = "\\.[0-9]*\\.";
+        pattern = Pattern.compile(rex);
+        matcher = pattern.matcher(path);
+        while (matcher.find()) {
+            String group = matcher.group();
+            path = path.replaceFirst("\\." + group.substring(1, group.length() - 1) + "\\.", group.substring(0, group.length() - 1) + " .");
+        }
+        // 去除多余空格
+        path = path.replaceAll("\\s+", " ");
+        return path;
+    }
+
+    public static void transform(Path path, String d, float scale) {
+        PointF[] points = new PointF[]{new PointF(), new PointF()};
+        List<String> functions = VectorParser.matches(d);
+        for (String fun : functions) {
+            if (PathHelper.m(fun)) {
+                PathHelper.m(path, fun, scale, points);
+            } else if (PathHelper.l(fun)) {
+                PathHelper.l(path, fun, scale, points);
+            } else if (PathHelper.h(fun)) {
+                PathHelper.h(path, fun, scale, points);
+            } else if (PathHelper.v(fun)) {
+                PathHelper.v(path, fun, scale, points);
+            } else if (PathHelper.c(fun)) {
+                PathHelper.c(path, fun, scale, points);
+            } else if (PathHelper.z(fun)) {
+                PathHelper.z(path);
+            }
+        }
+    }
+
+    public static List<String> matches(String path) {
+        String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z][0-9|\\-.\\s]*";
+        Pattern pattern = Pattern.compile(rex);
+        Matcher matcher = pattern.matcher(path);
+        List<String> functions = new ArrayList<>();
+        while (matcher.find()) {
+            L.e(matcher.group());
+            functions.add(matcher.group());
+        }
+        return functions;
+    }
+
 }
