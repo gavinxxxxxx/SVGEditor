@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <me.gavin.svg.editor.app.main.VectorView
+        android:id="@+id/vectorView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="#f0f0f0"
+        tools:layout_height="200dp"
+        tools:layout_width="200dp" />
+
+</layout>

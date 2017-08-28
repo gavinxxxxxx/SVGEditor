@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.gavin.svg.editor.model.IPath;
-import me.gavin.svg.editor.model.Vector;
+import me.gavin.svg.editor.app.model.IPath;
+import me.gavin.svg.editor.app.model.Vector;
 
 /**
  * SVG 解析器
@@ -65,9 +65,11 @@ public class VectorParser {
                     path.setPath(pathFormat(d));
                     path.setFill(parser.getAttributeValue(null, "fill"));
                     if (vector.getPathList() == null) {
-                        vector.setPathList(new ArrayList<IPath>());
+                        vector.setPathList(new ArrayList<>());
                     }
-                    vector.getPathList().add(path);
+                    if (!"none".equals(path.getFill())) {
+                        vector.getPathList().add(path);
+                    }
                 }
             }
             parser.next();
@@ -96,12 +98,16 @@ public class VectorParser {
         while (matcher.find()) {
             String group = matcher.group();
             path = path.replaceFirst("\\." + group.substring(1, group.length() - 1) + "\\.", group.substring(0, group.length() - 1) + " .");
+            matcher.reset(path);
         }
         // 去除多余空格
         path = path.replaceAll("\\s+", " ");
         return path;
     }
 
+    /**
+     * path 解析
+     */
     public static void transform(Path path, String d, float scale) {
         PointF[] points = new PointF[]{new PointF(), new PointF()};
         List<String> functions = VectorParser.matches(d);
@@ -114,14 +120,25 @@ public class VectorParser {
                 PathHelper.h(path, fun, scale, points);
             } else if (PathHelper.v(fun)) {
                 PathHelper.v(path, fun, scale, points);
+            } else if (PathHelper.q(fun)) {
+                PathHelper.q(path, fun, scale, points);
+            } else if (PathHelper.t(fun)) {
+                PathHelper.t(path, fun, scale, points);
             } else if (PathHelper.c(fun)) {
                 PathHelper.c(path, fun, scale, points);
+            } else if (PathHelper.s(fun)) {
+                PathHelper.s(path, fun, scale, points);
+            } else if (PathHelper.a(fun)) {
+                PathHelper.a(path, fun, scale, points);
             } else if (PathHelper.z(fun)) {
                 PathHelper.z(path);
             }
         }
     }
 
+    /**
+     * 路径方法分离
+     */
     public static List<String> matches(String path) {
         String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z][0-9|\\-.\\s]*";
         Pattern pattern = Pattern.compile(rex);
