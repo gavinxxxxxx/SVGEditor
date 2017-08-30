@@ -1,8 +1,8 @@
-package me.gavin.svg.editor.app.main;
+package me.gavin.svg.editor.vector;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
@@ -12,8 +12,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.gavin.svg.editor.app.model.IPath;
-import me.gavin.svg.editor.app.model.Vector;
+import me.gavin.svg.editor.vector.model.IBase;
+import me.gavin.svg.editor.vector.model.Vector;
 import me.gavin.svg.editor.util.VectorParser;
 
 /**
@@ -23,6 +23,10 @@ import me.gavin.svg.editor.util.VectorParser;
  */
 public class VectorView extends View {
 
+    private VectorViewAttacher attacher;
+
+    public Matrix canvasMatrix = new Matrix();
+
     private Vector mVector;
 
     private List<Paint> mPaints;
@@ -30,6 +34,7 @@ public class VectorView extends View {
 
     public VectorView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        attacher = new VectorViewAttacher(this);
     }
 
     @Override
@@ -49,15 +54,20 @@ public class VectorView extends View {
             return;
         }
 
+        canvas.setMatrix(canvasMatrix);
+
         for (int i = 0; i < mVector.getPathList().size(); i++) {
             Path path = mPaths.get(i);
             path.reset();
 
             float scale = getWidth() * 1.0f / mVector.getViewportWidth();
-            VectorParser.transform(path, mVector.getPathList().get(i).getPath(), scale);
+            VectorParser.transform(path, mVector.getPathList().get(i), scale);
 
             mPaths.add(path);
         }
+
+//        canvas.scale(6, 6);
+//        canvas.translate(-400, -400);
 
         for (int i = 0; i < mVector.getPathList().size(); i++) {
             canvas.drawPath(mPaths.get(i), mPaints.get(i));
@@ -69,11 +79,12 @@ public class VectorView extends View {
         if (canDraw()) {
             mPaints = new ArrayList<>();
             mPaths = new ArrayList<>();
-            for (IPath ip : mVector.getPathList()) {
+            for (IBase ip : mVector.getPathList()) {
                 Paint paint = new Paint();
-                paint.setColor(Color.RED);
+                paint.setColor(ip.getFillColor());
                 paint.setAntiAlias(true);
-                paint.setStyle(Paint.Style.FILL);
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(5);
                 mPaints.add(paint);
 
                 mPaths.add(new Path());

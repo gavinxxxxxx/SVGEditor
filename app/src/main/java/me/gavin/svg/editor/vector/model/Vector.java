@@ -1,6 +1,7 @@
-package me.gavin.svg.editor.app.model;
+package me.gavin.svg.editor.vector.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public class Vector implements Serializable {
     /**
      * 路径
      */
-    private List<IPath> pathList;
+    private List<IBase> pathList = new ArrayList<>();
 
     public int getWidth() {
         return width;
@@ -59,11 +60,11 @@ public class Vector implements Serializable {
         this.viewportHeight = viewportHeight;
     }
 
-    public List<IPath> getPathList() {
+    public List<IBase> getPathList() {
         return pathList;
     }
 
-    public void setPathList(List<IPath> pathList) {
+    public void setPathList(List<IBase> pathList) {
         this.pathList = pathList;
     }
 

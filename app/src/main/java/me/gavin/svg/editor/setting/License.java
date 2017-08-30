@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.app.setting;
+package me.gavin.svg.editor.setting;
 
 import java.io.Serializable;
 

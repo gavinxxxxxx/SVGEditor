@@ -254,9 +254,31 @@ public class PathHelper {
         }
         for (int i = 0; i < args.length; i += 7) {
             if (f.startsWith("A")) {
-                // TODO: 2017/8/28  
+                ArcHelper.drawArc(path,
+                        points[0].x,
+                        points[0].y,
+                        Float.parseFloat(args[5]) * scale,
+                        Float.parseFloat(args[6]) * scale,
+                        Float.parseFloat(args[0]) * scale,
+                        Float.parseFloat(args[1]) * scale,
+                        Float.parseFloat(args[2]),
+                        Integer.parseInt(args[3]),
+                        Integer.parseInt(args[4]));
+                points[0].x = Float.parseFloat(args[5]) * scale;
+                points[0].y = Float.parseFloat(args[6]) * scale;
             } else if (f.startsWith("a")) {
-                // TODO: 2017/8/28
+                ArcHelper.drawArc(path,
+                        points[0].x,
+                        points[0].y,
+                        points[0].x += Float.parseFloat(args[5]) * scale,
+                        points[0].x += Float.parseFloat(args[6]) * scale,
+                        Float.parseFloat(args[0]) * scale,
+                        Float.parseFloat(args[1]) * scale,
+                        Float.parseFloat(args[2]),
+                        Integer.parseInt(args[3]),
+                        Integer.parseInt(args[4]));
+                points[0].x += Float.parseFloat(args[5]) * scale;
+                points[0].y += Float.parseFloat(args[6]) * scale;
             }
         }
     }

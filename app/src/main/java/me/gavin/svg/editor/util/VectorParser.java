@@ -2,9 +2,11 @@ package me.gavin.svg.editor.util;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.support.annotation.XmlRes;
+import android.text.TextUtils;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -17,8 +19,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.gavin.svg.editor.app.model.IPath;
-import me.gavin.svg.editor.app.model.Vector;
+import me.gavin.svg.editor.vector.model.IBase;
+import me.gavin.svg.editor.vector.model.ICircle;
+import me.gavin.svg.editor.vector.model.IPath;
+import me.gavin.svg.editor.vector.model.IRect;
+import me.gavin.svg.editor.vector.model.Vector;
 
 /**
  * SVG 解析器
@@ -59,22 +64,71 @@ public class VectorParser {
                         vector.setViewportWidth(Integer.parseInt(rect[2]));
                         vector.setViewportHeight(Integer.parseInt(rect[3]));
                     }
+                } else if ("defs".equals(parser.getName())) {
+                    if (!parser.isEmptyElementTag()) {
+                        parser.nextTag();
+                    }
                 } else if (vector != null && "path".equals(parser.getName())) {
                     IPath path = new IPath();
                     String d = parser.getAttributeValue(null, "d");
                     path.setPath(pathFormat(d));
-                    path.setFill(parser.getAttributeValue(null, "fill"));
-                    if (vector.getPathList() == null) {
-                        vector.setPathList(new ArrayList<>());
-                    }
-                    if (!"none".equals(path.getFill())) {
+                    path.setFillColor(parseColor(parser.getAttributeValue(null, "fill")));
+                    path.setStrokeColor(parseColor(parser.getAttributeValue(null, "stroke")));
+                    String strokeWidth = parser.getAttributeValue(null, "stroke-width");
+                    path.setStrokeWidth(strokeWidth == null ? 0f : Float.parseFloat(strokeWidth));
+                    if (Color.alpha(path.getFillColor()) > 0) {
                         vector.getPathList().add(path);
+                    }
+                } else if (vector != null && "rect".equals(parser.getName())) {
+                    IRect rect = new IRect();
+                    rect.setX(Float.parseFloat(parser.getAttributeValue(null, "x")));
+                    rect.setY(Float.parseFloat(parser.getAttributeValue(null, "y")));
+                    rect.setWidth(Float.parseFloat(parser.getAttributeValue(null, "width")));
+                    rect.setHeight(Float.parseFloat(parser.getAttributeValue(null, "height")));
+                    String r = parser.getAttributeValue(null, "rx");
+                    if (!TextUtils.isEmpty(r)) {
+                        rect.setRx(Float.parseFloat(r));
+                    }
+                    r = parser.getAttributeValue(null, "ry");
+                    if (!TextUtils.isEmpty(r)) {
+                        rect.setRy(Float.parseFloat(r));
+                    }
+                    rect.setFillColor(parseColor(parser.getAttributeValue(null, "fill")));
+                    rect.setStrokeColor(parseColor(parser.getAttributeValue(null, "stroke")));
+                    String strokeWidth = parser.getAttributeValue(null, "stroke-width");
+                    rect.setStrokeWidth(strokeWidth == null ? 0f : Float.parseFloat(strokeWidth));
+                    if (Color.alpha(rect.getFillColor()) > 0) {
+                        vector.getPathList().add(rect);
+                    }
+                } else if (vector != null && "circle".equals(parser.getName())) {
+                    ICircle circle = new ICircle();
+                    circle.setCx(Float.parseFloat(parser.getAttributeValue(null, "cx")));
+                    circle.setCy(Float.parseFloat(parser.getAttributeValue(null, "cy")));
+                    circle.setR(Float.parseFloat(parser.getAttributeValue(null, "r")));
+                    circle.setFillColor(parseColor(parser.getAttributeValue(null, "fill")));
+                    circle.setStrokeColor(parseColor(parser.getAttributeValue(null, "stroke")));
+                    String strokeWidth = parser.getAttributeValue(null, "stroke-width");
+                    circle.setStrokeWidth(strokeWidth == null ? 0f : Float.parseFloat(strokeWidth));
+                    if (Color.alpha(circle.getFillColor()) > 0) {
+                        vector.getPathList().add(circle);
                     }
                 }
             }
             parser.next();
         }
         return vector;
+    }
+
+    private static int parseColor(String colorStr) {
+        int result;
+        if (TextUtils.isEmpty(colorStr)) {
+            result = 0xFF000000;
+        } else if ("none".equalsIgnoreCase(colorStr)) {
+            result = 0x00000000;
+        } else {
+            result = Color.parseColor(colorStr);
+        }
+        return result;
     }
 
     /**
@@ -84,9 +138,17 @@ public class VectorParser {
         // 逗号全部转换成空格
         path = path.trim().replaceAll(",", " ");
         // 负参分离
-        String rex = "[0-9|.]-";
+        String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z]\\s+]";
         Pattern pattern = Pattern.compile(rex);
         Matcher matcher = pattern.matcher(path);
+        while (matcher.find()) {
+            String group = matcher.group();
+            path = path.replaceFirst(group, group.charAt(0) + "");
+        }
+        // 负参分离
+        rex = "[0-9|.]-";
+        pattern = Pattern.compile(rex);
+        matcher = pattern.matcher(path);
         while (matcher.find()) {
             String group = matcher.group();
             path = path.replaceFirst(group, group.charAt(0) + " -");
@@ -103,6 +165,21 @@ public class VectorParser {
         // 去除多余空格
         path = path.replaceAll("\\s+", " ");
         return path;
+    }
+
+    /**
+     * path 解析
+     */
+    public static void transform(Path path, IBase base, float scale) {
+        if (base instanceof IPath) {
+            transform(path, ((IPath) base).getPath(), scale);
+        } else if (base instanceof IRect) {
+            IRect rect = (IRect) base;
+            path.addRoundRect(rect.getX() * scale, rect.getY() * scale, rect.getX() * scale + rect.getWidth() * scale, rect.getY() * scale + rect.getHeight() * scale, rect.getRx() * scale, rect.getRy() * scale, Path.Direction.CCW);
+        } else if (base instanceof ICircle) {
+            ICircle circle = (ICircle) base;
+            path.addCircle(circle.getCx() * scale, circle.getCy() * scale, circle.getR() * scale, Path.Direction.CCW);
+        }
     }
 
     /**
@@ -145,7 +222,6 @@ public class VectorParser {
         Matcher matcher = pattern.matcher(path);
         List<String> functions = new ArrayList<>();
         while (matcher.find()) {
-            L.e(matcher.group());
             functions.add(matcher.group());
         }
         return functions;

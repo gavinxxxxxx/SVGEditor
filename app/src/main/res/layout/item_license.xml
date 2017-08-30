@@ -6,7 +6,7 @@
 
         <variable
             name="item"
-            type="me.gavin.svg.editor.app.setting.License" />
+            type="me.gavin.svg.editor.setting.License" />
 
     </data>
 

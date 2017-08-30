@@ -1,11 +1,10 @@
-package me.gavin.svg.editor.app.model;
+package me.gavin.svg.editor.vector.model;
 
 import java.io.Serializable;
 
-public class IPath implements Serializable {
+public class IPath extends IBase implements Serializable {
 
     private String path;
-    private String fill;
 
     public String getPath() {
         return path;
@@ -15,19 +14,10 @@ public class IPath implements Serializable {
         this.path = path;
     }
 
-    public String getFill() {
-        return fill;
-    }
-
-    public void setFill(String fill) {
-        this.fill = fill;
-    }
-
     @Override
     public String toString() {
         return "Path{" +
                 "path='" + path + '\'' +
-                ", fill='" + fill + '\'' +
                 '}';
     }
 }
