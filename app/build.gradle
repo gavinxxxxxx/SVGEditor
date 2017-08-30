@@ -20,11 +20,14 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('xxxxxx.jks')
-            storePassword 'xxxxxx'
-            keyAlias 'xxxxxx'
-            keyPassword 'xxxxxx'
-            v2SigningEnabled false
+            try {
+                storeFile file(STORE_FILE)
+                storePassword STORE_PASSWORD
+                keyAlias KEY_ALIAS
+                keyPassword KEY_PASSWORD
+            } catch (e) {
+                throw new InvalidUserDataException("You should define KEY_INFO in gradle.properties.")
+            }
         }
     }
 
@@ -126,4 +129,5 @@ dependencies {
     compile rootProject.ext.libGson
 
     compile rootProject.ext.libGreenDao
+
 }

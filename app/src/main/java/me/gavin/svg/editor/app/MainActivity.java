@@ -22,7 +22,6 @@ public class MainActivity extends BaseActivity<LayoutVectorBinding> {
     @Override
     protected void afterCreate(@Nullable Bundle savedInstanceState) {
         a();
-        list();
     }
 
     private void a() {
@@ -32,27 +31,6 @@ public class MainActivity extends BaseActivity<LayoutVectorBinding> {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(v -> binding.vectorView.setVector(v), L::e);
-    }
-
-    private void list() {
-//        String path = "action";
-//        Observable.just(path)
-//                .map(s -> getAssets().list(s))
-//                .flatMap(Observable::fromArray)
-//                .filter(s -> s.endsWith(".svg"))
-//                .map(s -> getAssets().open(path + "/" + s))
-//                .map(VectorParser::parse)
-//                .map(vector -> {
-//                    vector.setWidth(256);
-//                    vector.setHeight(256);
-//                    return vector;
-//                })
-//                .toList()
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(vectors -> {
-//                    binding.recycler.setAdapter(new VectorAdapter(this, vectors));
-//                }, L::e);
     }
 
 }
