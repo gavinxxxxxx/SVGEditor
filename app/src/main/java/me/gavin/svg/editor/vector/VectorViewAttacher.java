@@ -5,22 +5,24 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- * 这里是萌萌哒注释君
+ * 手势操作助手
  *
  * @author gavin.xiong 2017/8/30
  */
-public class VectorViewAttacher implements View.OnTouchListener, OnGestureListener {
+class VectorViewAttacher implements View.OnTouchListener, OnGestureListener {
 
-    private VectorView mZoomView;
+    private VectorView mView;
 
     private CustomGestureDetector mScaleDragDetector;
 
     private final float[] mMatrixValues = new float[9];
 
-    private boolean mZoomable = true;
+    static void attach(VectorView view) {
+        new VectorViewAttacher(view);
+    }
 
-    public VectorViewAttacher(VectorView view) {
-        mZoomView = view;
+    private VectorViewAttacher(VectorView view) {
+        mView = view;
         view.setOnTouchListener(this);
 
         if (view.isInEditMode()) {
@@ -32,15 +34,15 @@ public class VectorViewAttacher implements View.OnTouchListener, OnGestureListen
 
     @Override
     public boolean onTouch(View v, MotionEvent ev) {
-        return mZoomable
+        return mView.drawable()
                 && mScaleDragDetector != null
                 && mScaleDragDetector.onTouchEvent(ev);
     }
 
     @Override
     public void onDrag(float dx, float dy) {
-        mZoomView.canvasMatrix.postTranslate(dx, dy);
-        mZoomView.postInvalidate();
+        mView.mPathMatrix.postTranslate(dx, dy);
+        mView.postInvalidate();
     }
 
     @Override
@@ -50,24 +52,18 @@ public class VectorViewAttacher implements View.OnTouchListener, OnGestureListen
 
     @Override
     public void onScale(float scaleFactor, float focusX, float focusY) {
-        mZoomView.canvasMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
-        mZoomView.postInvalidate();
+        mView.mPathMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
+        mView.postInvalidate();
     }
 
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
-        mZoomView.canvasMatrix.postRotate(degrees, focusX, focusY);
-        mZoomView.postInvalidate();
-    }
-
-    public void setZoomable(boolean zoomable) {
-        this.mZoomable = zoomable;
+        mView.mPathMatrix.postRotate(degrees, focusX, focusY);
+        mView.postInvalidate();
     }
 
     public float getScale() {
-        return (float) Math.sqrt((float)
-                Math.pow(getValue(mZoomView.canvasMatrix, Matrix.MSCALE_X), 2)
-                + (float) Math.pow(getValue(mZoomView.canvasMatrix, Matrix.MSKEW_Y), 2));
+        return getValue(mView.mPathMatrix, Matrix.MSCALE_X);
     }
 
     private float getValue(Matrix matrix, int whichValue) {

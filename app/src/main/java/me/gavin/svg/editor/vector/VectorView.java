@@ -12,9 +12,9 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.gavin.svg.editor.util.VectorParser;
 import me.gavin.svg.editor.vector.model.IBase;
 import me.gavin.svg.editor.vector.model.Vector;
-import me.gavin.svg.editor.util.VectorParser;
 
 /**
  * 用来显示 svg
@@ -23,9 +23,7 @@ import me.gavin.svg.editor.util.VectorParser;
  */
 public class VectorView extends View {
 
-    private VectorViewAttacher attacher;
-
-    public Matrix canvasMatrix = new Matrix();
+    public final Matrix mPathMatrix;
 
     private Vector mVector;
 
@@ -34,7 +32,9 @@ public class VectorView extends View {
 
     public VectorView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        attacher = new VectorViewAttacher(this);
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
+        mPathMatrix = new Matrix();
+        VectorViewAttacher.attach(this);
     }
 
     @Override
@@ -50,11 +50,9 @@ public class VectorView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (!canDraw()) {
+        if (!drawable()) {
             return;
         }
-
-        canvas.setMatrix(canvasMatrix);
 
         for (int i = 0; i < mVector.getPathList().size(); i++) {
             Path path = mPaths.get(i);
@@ -66,23 +64,23 @@ public class VectorView extends View {
             mPaths.add(path);
         }
 
-//        canvas.scale(6, 6);
-//        canvas.translate(-400, -400);
-
         for (int i = 0; i < mVector.getPathList().size(); i++) {
+            mPaths.get(i).transform(mPathMatrix);
             canvas.drawPath(mPaths.get(i), mPaints.get(i));
         }
+
     }
 
     public void setVector(Vector vector) {
         this.mVector = vector;
-        if (canDraw()) {
+        if (drawable()) {
             mPaints = new ArrayList<>();
             mPaths = new ArrayList<>();
             for (IBase ip : mVector.getPathList()) {
                 Paint paint = new Paint();
                 paint.setColor(ip.getFillColor());
                 paint.setAntiAlias(true);
+                paint.setDither(true);
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(5);
                 mPaints.add(paint);
@@ -93,7 +91,7 @@ public class VectorView extends View {
         postInvalidate();
     }
 
-    private boolean canDraw() {
+    public boolean drawable() {
         return mVector != null && mVector.getPathList() != null && !mVector.getPathList().isEmpty();
     }
 }

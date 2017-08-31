@@ -48,7 +48,7 @@ public class VectorParser {
     }
 
     /**
-     * 解析 xml todo 基本形状
+     * 解析 xml
      */
     private static Vector parse(XmlPullParser parser) throws XmlPullParserException, IOException {
         Vector vector = null;
