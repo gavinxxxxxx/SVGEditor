@@ -20,14 +20,11 @@ android {
 
     signingConfigs {
         release {
-            try {
-                storeFile file(STORE_FILE)
-                storePassword STORE_PASSWORD
-                keyAlias KEY_ALIAS
-                keyPassword KEY_PASSWORD
-            } catch (e) {
-                throw new InvalidUserDataException("You should define KEY_INFO in gradle.properties.")
-            }
+            storeFile file(STORE_FILE)
+            storePassword STORE_PASSWORD
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
+            v2SigningEnabled false
         }
     }
 
