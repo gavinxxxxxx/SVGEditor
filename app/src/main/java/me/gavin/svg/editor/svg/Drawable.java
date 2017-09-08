@@ -40,4 +40,8 @@ public abstract class Drawable implements Serializable {
     public void setStrokeWidth(float strokeWidth) {
         this.strokeWidth = strokeWidth;
     }
+    
+    public void scale(boolean scale) {
+        // TODO: 2017/9/8  
+    }
 }
