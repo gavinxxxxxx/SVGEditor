@@ -83,6 +83,7 @@ public class VectorView extends View {
                 paint.setDither(true);
                 paint.setStyle(Paint.Style.STROKE);
                 paint.setStrokeWidth(5);
+
                 mPaints.add(paint);
 
                 mPaths.add(new Path());

@@ -32,12 +32,13 @@ import me.gavin.svg.editor.vector.model.Vector;
  */
 public class VectorParser {
 
-    public static Vector parse(Resources resources, @XmlRes int resId) throws XmlPullParserException, IOException {
-        XmlResourceParser parser = resources.getXml(resId);
-        try {
-            return parse(parser);
-        } finally {
-            parser.close();
+    public static Vector parse(Resources resources, @XmlRes int resId) throws Resources.NotFoundException, XmlPullParserException, IOException {
+        try (XmlResourceParser parser = resources.getXml(resId)) {
+            try {
+                return parse(parser);
+            } catch (XmlPullParserException | IOException e) {
+                throw e;
+            }
         }
     }
 
