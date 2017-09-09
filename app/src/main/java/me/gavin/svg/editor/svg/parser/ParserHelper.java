@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.parser;
 
 import android.graphics.Color;
 import android.text.TextUtils;

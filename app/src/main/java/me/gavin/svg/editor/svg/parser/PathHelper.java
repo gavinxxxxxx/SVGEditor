@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.util;
+package me.gavin.svg.editor.svg.parser;
 
 import android.graphics.Path;
 import android.graphics.PointF;

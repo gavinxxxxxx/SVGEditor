@@ -1,9 +1,10 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.parser;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.support.annotation.XmlRes;
 import android.util.Xml;
 
@@ -14,11 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
-import static me.gavin.svg.editor.svg.ParserHelper.getColor;
-import static me.gavin.svg.editor.svg.ParserHelper.getFloat;
-import static me.gavin.svg.editor.svg.ParserHelper.getFloats;
-import static me.gavin.svg.editor.svg.ParserHelper.getString;
-import static me.gavin.svg.editor.svg.ParserHelper.pathFormat;
+import me.gavin.svg.editor.svg.model.IPath;
+import me.gavin.svg.editor.svg.model.SVG;
+import me.gavin.svg.editor.svg.model.ViewBox;
 
 /**
  * SVG 解析器
@@ -47,27 +46,28 @@ public class SVGParser {
                 switch (parser.getName()) {
                     case "svg":
                         svg = new SVG();
-                        svg.setWidth(getFloat(parser, "width"));
-                        svg.setHeight(getFloat(parser, "height"));
-                        String viewBox = getString(parser, "viewBox");
+                        svg.setWidth(ParserHelper.getFloat(parser, "width"));
+                        svg.setHeight(ParserHelper.getFloat(parser, "height"));
+                        String viewBox = ParserHelper.getString(parser, "viewBox");
                         if (viewBox != null) {
-                            float[] fs = getFloats(viewBox);
+                            float[] fs = ParserHelper.getFloats(viewBox);
                             svg.setViewBox(new ViewBox(fs));
                         }
-                        svg.setPreserveAspectRatio(getString(parser, "preserveAspectRatio"));
-                        svg.setStyle(getString(parser, "style"));
+                        svg.setPreserveAspectRatio(ParserHelper.getString(parser, "preserveAspectRatio"));
+                        svg.setStyle(ParserHelper.getString(parser, "style"));
                         break;
                     case "path":
                         if (svg == null) {
                             break;
                         }
                         IPath path = new IPath();
-                        path.setPath(pathFormat(getString(parser, "d")));
+                        path.setPath(ParserHelper.pathFormat(ParserHelper.getString(parser, "d")));
                         path.setStrokePaint(parseStroke(parser));
                         path.setFillPaint(parseFill(parser));
 
-                        path.setStrokeWidth(getFloat(parser, "stroke-width"));
+                        path.setStrokeWidth(ParserHelper.getFloat(parser, "stroke-width"));
                         svg.getDrawables().add(path);
+                        svg.getPaths().add(new Path());
                         break;
                     case "defs":
                         if (!parser.isEmptyElementTag()) {
@@ -93,10 +93,10 @@ public class SVGParser {
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.STROKE);
 
-        paint.setColor(getColor(parser, "stroke"));
-        paint.setStrokeWidth(getFloat(parser, "stroke-width"));
+        paint.setColor(ParserHelper.getColor(parser, "stroke"));
+        paint.setStrokeWidth(ParserHelper.getFloat(parser, "stroke-width"));
 
-        String cap = getString(parser, "stroke-linecap");
+        String cap = ParserHelper.getString(parser, "stroke-linecap");
         if ("round".equals(cap)) {
             paint.setStrokeCap(Paint.Cap.ROUND);
         } else if ("square".equals(cap)) {
@@ -105,7 +105,7 @@ public class SVGParser {
             paint.setStrokeCap(Paint.Cap.BUTT);
         }
 
-        String join = getString(parser, "stroke-linejoin");
+        String join = ParserHelper.getString(parser, "stroke-linejoin");
         if ("miter".equals(join)) {
             paint.setStrokeJoin(Paint.Join.MITER);
         } else if ("round".equals(join)) {
@@ -114,12 +114,12 @@ public class SVGParser {
             paint.setStrokeJoin(Paint.Join.BEVEL);
         }
 
-        String dashStyle = getString(parser, "stroke-dasharray");
+        String dashStyle = ParserHelper.getString(parser, "stroke-dasharray");
         if (dashStyle != null) {
             if ("none".equalsIgnoreCase(dashStyle)) {
                 paint.setPathEffect(null);
             } else {
-                String offset = getString(parser, "stroke-dashoffset");
+                String offset = ParserHelper.getString(parser, "stroke-dashoffset");
 
                 StringTokenizer st = new StringTokenizer(dashStyle, " ,");
                 int count = st.countTokens();
@@ -128,7 +128,7 @@ public class SVGParser {
                 float current = 1f;
                 int i = 0;
                 while (st.hasMoreTokens()) {
-                    intervals[i++] = current = getFloat(st.nextToken(), current);
+                    intervals[i++] = current = ParserHelper.getFloat(st.nextToken(), current);
                     max += current;
                 }
 
@@ -158,11 +158,11 @@ public class SVGParser {
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.FILL);
 
-        paint.setColor(getColor(parser, "fill"));
+        paint.setColor(ParserHelper.getColor(parser, "fill"));
 
-        String fillOpacity = getString(parser, "fill-opacity");
+        String fillOpacity = ParserHelper.getString(parser, "fill-opacity");
         if (fillOpacity != null) {
-            float alpha = getFloat(fillOpacity);
+            float alpha = ParserHelper.getFloat(fillOpacity);
             paint.setAlpha((int) (255f * alpha));
         }
 

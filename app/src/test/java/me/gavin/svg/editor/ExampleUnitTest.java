@@ -3,10 +3,9 @@ package me.gavin.svg.editor;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import me.gavin.svg.editor.util.VectorParser;
 
 import static org.junit.Assert.assertEquals;
 
@@ -36,8 +35,7 @@ public class ExampleUnitTest {
 
     @Test
     public void format() {
-        String path = "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z";
-        System.out.println(VectorParser.pathFormat(path));
+
     }
 
     @Test
@@ -48,6 +46,64 @@ public class ExampleUnitTest {
         for (int i = 0; i < ss.length; i++) {
             System.out.println(i + ":" + ss[i]);
         }
+    }
+
+    @Test
+    public void num() {
+        a(20);
+    }
+
+    private void a(int n) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (n % 2 == 0) { // 偶数
+                    int c = d(i, j, n);
+                    int lineCount = c * 2;
+                    int rc = n / 2 - c;
+                    int start = s(rc, n);
+                    System.out.print(String.format(Locale.getDefault(), "%03d", b(lineCount, start, j - rc, i - rc)));
+                }
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * 计算最外圈
+     */
+    private int b(int lineCount, int start, int h, int v) {
+        int result = start;
+        if (h == 0) {
+            result += v;
+        } else if (v == lineCount - 1) {
+            result += lineCount + h - 1;
+        } else if (h == lineCount - 1) {
+            result += lineCount * 3 - v - 3;
+        } else {
+            result += lineCount * 4 - h - 4;
+        }
+        return result;
+    }
+
+    /**
+     * 倒数第几圈
+     */
+    private int d(int h, int v, int n) {
+        return Math.max(
+                Math.abs(((int) (h - (n - 1.0) / 2))) + 1,
+                Math.abs(((int) (v - (n - 1.0) / 2))) + 1);
+    }
+
+    /**
+     * 倒数第几圈
+     */
+    private int s(int c, int n) {
+        int start = 1;
+        for (int i = 0; i < c; i++) {
+            start += (n - c) * 4;
+        }
+        return start;
     }
 
 }

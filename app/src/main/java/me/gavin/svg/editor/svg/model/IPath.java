@@ -1,6 +1,8 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.model;
 
 import java.io.Serializable;
+
+import me.gavin.svg.editor.svg.model.Drawable;
 
 public class IPath extends Drawable implements Serializable {
 
@@ -14,16 +16,9 @@ public class IPath extends Drawable implements Serializable {
         this.path = path;
     }
 
-//    @Override
-//    public String toString() {
-//        return "path='" + path + '\'';
-//    }
-
-
     @Override
     public String toString() {
-        return "IPath{" +
-                "path='" + path + '\'' +
-                "} " + super.toString();
+        return "path='" + path + '\'';
     }
+
 }

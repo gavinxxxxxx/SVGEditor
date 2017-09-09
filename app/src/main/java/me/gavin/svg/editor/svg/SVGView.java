@@ -3,13 +3,12 @@ package me.gavin.svg.editor.svg;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
+import me.gavin.svg.editor.svg.model.SVG;
+import me.gavin.svg.editor.svg.parser.PathParser;
 
 /**
  * 这里是萌萌哒注释君
@@ -23,8 +22,6 @@ public class SVGView extends View {
     public final Matrix mPathMatrix;
 
     private SVG mSvg;
-
-    private List<Path> mPaths = new ArrayList<>();
 
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -51,38 +48,24 @@ public class SVGView extends View {
         }
 
         for (int i = 0; i < mSvg.getDrawables().size(); i++) {
-            Path path = mPaths.get(i);
-            path.reset();
+            mSvg.getPaths().get(i).reset();
 
-            float scale = getWidth() * 1.0f / mSvg.getViewBox().width;
-            PathParser.transform(path, mSvg.getDrawables().get(i), scale);
-
-            mPaths.add(path);
+            float scale = getWidth() / mSvg.getViewBox().width;
+            PathParser.transform(mSvg.getPaths().get(i), mSvg.getDrawables().get(i), scale);
 
             mSvg.getDrawables().get(i).getStrokePaint().setStrokeWidth(
                     mSvg.getDrawables().get(i).getStrokeWidth() * scale * mAttacher.getScale());
-        }
 
-        for (int i = 0; i < mSvg.getDrawables().size(); i++) {
-            mPaths.get(i).transform(mPathMatrix);
-            canvas.drawPath(mPaths.get(i), mSvg.getDrawables().get(i).getFillPaint());
-            canvas.drawPath(mPaths.get(i), mSvg.getDrawables().get(i).getStrokePaint());
+            mSvg.getPaths().get(i).transform(mPathMatrix);
+
+            canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getFillPaint());
+            canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getStrokePaint());
         }
 
     }
 
     public void set(SVG svg) {
         this.mSvg = svg;
-        if (drawable()) {
-            mPaths = new ArrayList<>();
-            for (int i = 0; i < svg.getDrawables().size(); i++) {
-                mPaths.add(new Path());
-            }
-        }
-
-//        float scale = getWidth() * 1.0f / mSvg.getViewBox().width;
-//        mPathMatrix.postScale(scale, scale);
-
         postInvalidate();
     }
 

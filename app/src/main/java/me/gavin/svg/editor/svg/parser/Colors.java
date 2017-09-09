@@ -1,13 +1,14 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.parser;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Colors {
+class Colors {
+
 	private static final Map<String, Integer> COLOURS;
 
-	public static Integer mapColour(String colour) {
+	static Integer mapColour(String colour) {
 		return COLOURS.get(colour);
 	}
 

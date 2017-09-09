@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.util;
+package me.gavin.svg.editor.svg.parser;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;

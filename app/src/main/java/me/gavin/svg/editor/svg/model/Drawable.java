@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.model;
 
 import android.graphics.Paint;
 

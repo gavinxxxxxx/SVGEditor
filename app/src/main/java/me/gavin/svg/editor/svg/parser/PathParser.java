@@ -1,12 +1,12 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.parser;
 
 import android.graphics.Path;
 import android.graphics.PointF;
 
 import java.util.List;
 
-import me.gavin.svg.editor.util.PathHelper;
-import me.gavin.svg.editor.util.VectorParser;
+import me.gavin.svg.editor.svg.model.Drawable;
+import me.gavin.svg.editor.svg.model.IPath;
 
 /**
  * 这里是萌萌哒注释君

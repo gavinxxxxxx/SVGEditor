@@ -1,6 +1,6 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.svg.model;
 
-import android.graphics.Paint;
+import android.graphics.Path;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ public class SVG implements Serializable {
     private String preserveAspectRatio;
     private String style;
     private List<Drawable> drawables = new ArrayList<>();
+    private List<Path> paths = new ArrayList<>();
 
     public float getWidth() {
         return width;
@@ -64,8 +65,8 @@ public class SVG implements Serializable {
         return drawables;
     }
 
-    public void setDrawables(List<Drawable> drawables) {
-        this.drawables = drawables;
+    public List<Path> getPaths() {
+        return paths;
     }
 
     @Override
