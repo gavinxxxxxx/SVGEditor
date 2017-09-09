@@ -54,14 +54,14 @@ public class ExampleUnitTest {
     }
 
     private void a(int n) {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        for (int v = 0; v < n; v++) {
+            for (int h = 0; h < n; h++) {
                 if (n % 2 == 0) { // 偶数
-                    int c = d(i, j, n);
+                    int c = d(h, v, n);
                     int lineCount = c * 2;
                     int rc = n / 2 - c;
                     int start = s(rc, n);
-                    System.out.print(String.format(Locale.getDefault(), "%03d", b(lineCount, start, j - rc, i - rc)));
+                    System.out.print(String.format(Locale.getDefault(), "%03d", b(lineCount, start, h - rc, v - rc)));
                 }
                 System.out.print(" ");
             }
