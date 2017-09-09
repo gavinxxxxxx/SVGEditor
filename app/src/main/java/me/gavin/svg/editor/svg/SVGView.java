@@ -79,6 +79,10 @@ public class SVGView extends View {
                 mPaths.add(new Path());
             }
         }
+
+//        float scale = getWidth() * 1.0f / mSvg.getViewBox().width;
+//        mPathMatrix.postScale(scale, scale);
+
         postInvalidate();
     }
 
