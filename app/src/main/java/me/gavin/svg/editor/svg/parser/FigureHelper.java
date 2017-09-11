@@ -37,26 +37,26 @@ class FigureHelper {
         PointF[] points = new PointF[]{new PointF(), new PointF()};
         List<String> functions = matches(d);
         for (String fun : functions) {
-            if (PathHelper.m(fun)) {
-                PathHelper.m(path, fun, points);
-            } else if (PathHelper.l(fun)) {
-                PathHelper.l(path, fun, points);
-            } else if (PathHelper.h(fun)) {
-                PathHelper.h(path, fun, points);
-            } else if (PathHelper.v(fun)) {
-                PathHelper.v(path, fun, points);
-            } else if (PathHelper.q(fun)) {
-                PathHelper.q(path, fun, points);
-            } else if (PathHelper.t(fun)) {
-                PathHelper.t(path, fun, points);
-            } else if (PathHelper.c(fun)) {
-                PathHelper.c(path, fun, points);
-            } else if (PathHelper.s(fun)) {
-                PathHelper.s(path, fun, points);
-            } else if (PathHelper.a(fun)) {
-                PathHelper.a(path, fun, points);
-            } else if (PathHelper.z(fun)) {
-                PathHelper.z(path);
+            if (PathParser.m(fun)) {
+                PathParser.m(path, fun, points);
+            } else if (PathParser.l(fun)) {
+                PathParser.l(path, fun, points);
+            } else if (PathParser.h(fun)) {
+                PathParser.h(path, fun, points);
+            } else if (PathParser.v(fun)) {
+                PathParser.v(path, fun, points);
+            } else if (PathParser.q(fun)) {
+                PathParser.q(path, fun, points);
+            } else if (PathParser.t(fun)) {
+                PathParser.t(path, fun, points);
+            } else if (PathParser.c(fun)) {
+                PathParser.c(path, fun, points);
+            } else if (PathParser.s(fun)) {
+                PathParser.s(path, fun, points);
+            } else if (PathParser.a(fun)) {
+                PathParser.a(path, fun, points);
+            } else if (PathParser.z(fun)) {
+                PathParser.z(path);
             }
         }
     }

@@ -8,7 +8,7 @@ import android.graphics.PointF;
  *
  * @author gavin.xiong 2017/8/26
  */
-class PathHelper {
+class PathParser {
 
     /**
      * 移动画笔
