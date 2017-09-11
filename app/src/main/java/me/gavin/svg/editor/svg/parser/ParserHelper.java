@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import org.xmlpull.v1.XmlPullParser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,5 +137,19 @@ class ParserHelper {
         // 去除多余空格
         path = path.replaceAll("\\s+", " ");
         return path;
+    }
+
+    /**
+     * 路径方法分离
+     */
+    static List<String> matches(String path) {
+        String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z][0-9|\\-.\\s]*";
+        Pattern pattern = Pattern.compile(rex);
+        Matcher matcher = pattern.matcher(path);
+        List<String> functions = new ArrayList<>();
+        while (matcher.find()) {
+            functions.add(matcher.group());
+        }
+        return functions;
     }
 }

@@ -3,12 +3,12 @@ package me.gavin.svg.editor.svg;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
 import me.gavin.svg.editor.svg.model.SVG;
-import me.gavin.svg.editor.svg.parser.PathParser;
 
 /**
  * 这里是萌萌哒注释君
@@ -17,17 +17,15 @@ import me.gavin.svg.editor.svg.parser.PathParser;
  */
 public class SVGView extends View {
 
-    private SVGViewAttacher mAttacher;
-
-    public final Matrix mPathMatrix;
+    private final Matrix mMatrix = new Matrix();
+    private float mScale = 1f;
 
     private SVG mSvg;
 
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
-        mPathMatrix = new Matrix();
-        mAttacher = SVGViewAttacher.attach(this);
+        SVGViewAttacher.attach(this);
     }
 
     @Override
@@ -48,15 +46,8 @@ public class SVGView extends View {
         }
 
         for (int i = 0; i < mSvg.getDrawables().size(); i++) {
-            mSvg.getPaths().get(i).reset();
-
-            float scale = getWidth() / mSvg.getViewBox().width;
-            PathParser.transform(mSvg.getPaths().get(i), mSvg.getDrawables().get(i), scale);
-
             mSvg.getDrawables().get(i).getStrokePaint().setStrokeWidth(
-                    mSvg.getDrawables().get(i).getStrokeWidth() * scale * mAttacher.getScale());
-
-            mSvg.getPaths().get(i).transform(mPathMatrix);
+                    mSvg.getDrawables().get(i).getStrokeWidth() * mScale);
 
             canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getFillPaint());
             canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getStrokePaint());
@@ -66,7 +57,28 @@ public class SVGView extends View {
 
     public void set(SVG svg) {
         this.mSvg = svg;
-        postInvalidate();
+        mScale = 1f;
+        postScale(getWidth() / mSvg.getViewBox().width, 0, 0);
+        invalidate();
+    }
+
+    public void postScale(float scaleFactor, float focusX, float focusY) {
+        mMatrix.reset();
+        mMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
+        mScale *= scaleFactor;
+        for (Path path : mSvg.getPaths()) {
+            path.transform(mMatrix);
+        }
+        invalidate();
+    }
+
+    public void postTranslate(float dx, float dy) {
+        mMatrix.reset();
+        mMatrix.postTranslate(dx, dy);
+        for (Path path : mSvg.getPaths()) {
+            path.transform(mMatrix);
+        }
+        invalidate();
     }
 
     public boolean drawable() {

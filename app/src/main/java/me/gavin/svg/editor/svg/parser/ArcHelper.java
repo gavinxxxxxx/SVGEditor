@@ -9,23 +9,22 @@ import android.graphics.RectF;
  *
  * @author gavin.xiong 2017/8/29
  */
-public class ArcHelper {
+class ArcHelper {
 
-    private static final RectF arcRectf = new RectF();
+    private static final RectF arcRectF = new RectF();
     private static final Matrix arcMatrix = new Matrix();
     private static final Matrix arcMatrix2 = new Matrix();
 
-    public static void drawArc(Path p, float lastX, float lastY, float x, float y, float rx, float ry, float theta,
-                               int largeArc, int sweepArc) {
+    static void drawArc(Path path, float lastX, float lastY, float x, float y, float rx, float ry, float theta, int largeArc, int sweepArc) {
         // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-
-        if (rx == 0 || ry == 0) {
-            p.lineTo(x, y);
-            return;
-        }
 
         if (x == lastX && y == lastY) {
             return; // nothing to draw
+        }
+
+        if (rx == 0 || ry == 0) {
+            path.lineTo(x, y);
+            return;
         }
 
         rx = Math.abs(rx);
@@ -55,9 +54,7 @@ public class ArcHelper {
             rys = ry * ry;
         }
 
-        final float R =
-                (float) Math.sqrt((rxs * rys - rxs * y1ts - rys * x1ts) / (rxs * y1ts + rys * x1ts))
-                        * ((largeArc == sweepArc) ? -1 : 1);
+        final float R = (float) Math.sqrt((rxs * rys - rxs * y1ts - rys * x1ts) / (rxs * y1ts + rys * x1ts)) * ((largeArc == sweepArc) ? -1 : 1);
         final float cxt = R * rx * y1t / ry;
         final float cyt = -R * ry * x1t / rx;
         final float cx = ct * cxt - st * cyt + (lastX + x) / 2;
@@ -75,20 +72,20 @@ public class ArcHelper {
         // draw
         if ((theta % 360) == 0) {
             // no rotate and translate need
-            arcRectf.set(cx - rx, cy - ry, cx + rx, cy + ry);
-            p.arcTo(arcRectf, th1, dth);
+            arcRectF.set(cx - rx, cy - ry, cx + rx, cy + ry);
+            path.arcTo(arcRectF, th1, dth);
         } else {
             // this is the hard and slow part :-)
-            arcRectf.set(-rx, -ry, rx, ry);
+            arcRectF.set(-rx, -ry, rx, ry);
 
             arcMatrix.reset();
             arcMatrix.postRotate(theta);
             arcMatrix.postTranslate(cx, cy);
             arcMatrix.invert(arcMatrix2);
 
-            p.transform(arcMatrix2);
-            p.arcTo(arcRectf, th1, dth);
-            p.transform(arcMatrix);
+            path.transform(arcMatrix2);
+            path.arcTo(arcRectF, th1, dth);
+            path.transform(arcMatrix);
         }
     }
 

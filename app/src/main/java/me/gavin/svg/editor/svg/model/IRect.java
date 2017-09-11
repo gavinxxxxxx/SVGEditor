@@ -1,4 +1,4 @@
-package me.gavin.svg.editor.vector.model;
+package me.gavin.svg.editor.svg.model;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author gavin.xiong 2017/8/28
  */
-public class IRect extends IBase implements Serializable {
+public class IRect extends Drawable implements Serializable {
 
     private float x;
     private float y;

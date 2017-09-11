@@ -1,8 +1,9 @@
 package me.gavin.svg.editor.svg;
 
-import android.graphics.Matrix;
 import android.view.MotionEvent;
 import android.view.View;
+
+import me.gavin.svg.editor.util.L;
 
 /**
  * 手势操作助手
@@ -14,8 +15,6 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
     private SVGView mView;
 
     private CustomGestureDetector mScaleDragDetector;
-
-    private final float[] mMatrixValues = new float[9];
 
     static SVGViewAttacher attach(SVGView view) {
         return new SVGViewAttacher(view);
@@ -41,8 +40,7 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onDrag(float dx, float dy) {
-        mView.mPathMatrix.postTranslate(dx, dy);
-        mView.postInvalidate();
+        mView.postTranslate(dx, dy);
     }
 
     @Override
@@ -52,22 +50,12 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onScale(float scaleFactor, float focusX, float focusY) {
-        mView.mPathMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
-        mView.postInvalidate();
+        mView.postScale(scaleFactor, focusX, focusY);
     }
 
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
-        mView.mPathMatrix.postRotate(degrees, focusX, focusY);
-        mView.postInvalidate();
+        L.e("onRotate");
     }
 
-    public float getScale() {
-        return getValue(mView.mPathMatrix, Matrix.MSCALE_X);
-    }
-
-    private float getValue(Matrix matrix, int whichValue) {
-        matrix.getValues(mMatrixValues);
-        return mMatrixValues[whichValue];
-    }
 }

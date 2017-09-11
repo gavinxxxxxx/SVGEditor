@@ -90,8 +90,7 @@ public class ExampleUnitTest {
      * 倒数第几圈
      */
     private int d(int h, int v, int n) {
-        return Math.max(
-                Math.abs(((int) (h - (n - 1.0) / 2))) + 1,
+        return Math.max(Math.abs(((int) (h - (n - 1.0) / 2))) + 1,
                 Math.abs(((int) (v - (n - 1.0) / 2))) + 1);
     }
 
