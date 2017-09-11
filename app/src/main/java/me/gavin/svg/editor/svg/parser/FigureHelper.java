@@ -7,6 +7,7 @@ import java.util.List;
 
 import me.gavin.svg.editor.svg.model.Drawable;
 import me.gavin.svg.editor.svg.model.ICircle;
+import me.gavin.svg.editor.svg.model.IEllipse;
 import me.gavin.svg.editor.svg.model.IPath;
 import me.gavin.svg.editor.svg.model.IRect;
 
@@ -17,24 +18,26 @@ import static me.gavin.svg.editor.svg.parser.ParserHelper.matches;
  *
  * @author gavin.xiong 2017/9/8
  */
-class FigureHelper {
+public class FigureHelper {
 
-    static void transform(Path path, Drawable drawable) {
+    public static void transform(Path path, Drawable drawable) {
         if (drawable instanceof IPath) {
-            transform(path, ((IPath) drawable).getPath());
+            transform(path, ((IPath) drawable).path);
         } else if (drawable instanceof IRect) {
             IRect rect = (IRect) drawable;
-            path.addRoundRect(rect.getX(), rect.getY(),
-                    rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight(),
-                    rect.getRx(), rect.getRy(), Path.Direction.CCW);
+            path.addRoundRect(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, rect.rx, rect.ry, Path.Direction.CCW);
         } else if (drawable instanceof ICircle) {
             ICircle circle = (ICircle) drawable;
-            path.addCircle(circle.getCx(), circle.getCy(), circle.getR(), Path.Direction.CCW);
+            path.addCircle(circle.cx, circle.cy, circle.r, Path.Direction.CCW);
+        } else if (drawable instanceof IEllipse) {
+            IEllipse ellipse = (IEllipse) drawable;
+            path.addOval(ellipse.cx - ellipse.rx, ellipse.cy - ellipse.ry, ellipse.cx + ellipse.rx, ellipse.cy + ellipse.ry, Path.Direction.CCW);
         }
     }
 
     private static void transform(Path path, String d) {
-        PointF[] points = new PointF[]{new PointF(), new PointF()};
+        // points[0]: 路径初始点 points[1]: 图形/方法初始点 points[2]: 控制点
+        PointF[] points = new PointF[]{new PointF(), new PointF(), new PointF()};
         List<String> functions = matches(d);
         for (String fun : functions) {
             if (PathParser.m(fun)) {
@@ -56,7 +59,7 @@ class FigureHelper {
             } else if (PathParser.a(fun)) {
                 PathParser.a(path, fun, points);
             } else if (PathParser.z(fun)) {
-                PathParser.z(path);
+                PathParser.z(path, points);
             }
         }
     }

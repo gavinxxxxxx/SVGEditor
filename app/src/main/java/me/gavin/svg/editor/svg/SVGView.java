@@ -9,9 +9,10 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import me.gavin.svg.editor.svg.model.SVG;
+import me.gavin.svg.editor.svg.parser.FigureHelper;
 
 /**
- * 这里是萌萌哒注释君
+ * SVGView
  *
  * @author gavin.xiong 2017/9/8
  */
@@ -52,13 +53,18 @@ public class SVGView extends View {
             canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getFillPaint());
             canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getStrokePaint());
         }
-
     }
 
     public void set(SVG svg) {
         this.mSvg = svg;
         mScale = 1f;
-        postScale(getWidth() / mSvg.getViewBox().width, 0, 0);
+        mSvg.getPaths().clear();
+        for (int i = 0; i < mSvg.getDrawables().size(); i++) {
+            Path path = new Path();
+            FigureHelper.transform(path, mSvg.getDrawables().get(i));
+            svg.getPaths().add(path);
+        }
+        postScale(Math.min(getWidth() / mSvg.getViewBox().width, getHeight() / mSvg.getViewBox().height), 0, 0);
         invalidate();
     }
 

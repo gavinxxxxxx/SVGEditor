@@ -9,31 +9,13 @@ import java.io.Serializable;
  */
 public class ICircle extends Drawable implements Serializable {
 
-    private float cx;
-    private float cy;
-    private float r;
+    public final float cx;
+    public final float cy;
+    public final float r;
 
-    public float getCx() {
-        return cx;
-    }
-
-    public void setCx(float cx) {
+    public ICircle(float cx, float cy, float r) {
         this.cx = cx;
-    }
-
-    public float getCy() {
-        return cy;
-    }
-
-    public void setCy(float cy) {
         this.cy = cy;
-    }
-
-    public float getR() {
-        return r;
-    }
-
-    public void setR(float r) {
         this.r = r;
     }
 }

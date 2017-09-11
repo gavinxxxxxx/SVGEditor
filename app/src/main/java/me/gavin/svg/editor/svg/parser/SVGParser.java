@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
+import me.gavin.svg.editor.svg.model.Drawable;
 import me.gavin.svg.editor.svg.model.ICircle;
+import me.gavin.svg.editor.svg.model.IEllipse;
 import me.gavin.svg.editor.svg.model.IPath;
 import me.gavin.svg.editor.svg.model.IRect;
 import me.gavin.svg.editor.svg.model.SVG;
@@ -67,48 +69,81 @@ public class SVGParser {
                         if (svg == null) {
                             break;
                         }
-                        IPath iPath = new IPath();
-                        iPath.setFillPaint(parseFill(parser));
-                        iPath.setStrokePaint(parseStroke(parser));
-                        iPath.setStrokeWidth(getFloat(parser, "stroke-width"));
-
-                        iPath.setPath(pathFormat(getString(parser, "d")));
+                        IPath iPath = new IPath(pathFormat(getString(parser, "d")));
+                        parseDrawable(iPath, parser);
                         svg.getDrawables().add(iPath);
-
-                        Path path = new Path();
-                        FigureHelper.transform(path, iPath);
-                        svg.getPaths().add(path);
+//                        svg.getPaths().add(transform(iPath));
                         break;
                     case "rect":
                         if (svg == null) {
                             break;
                         }
-                        IRect iRect = new IRect();
-                        iRect.setFillPaint(parseFill(parser));
-                        iRect.setStrokePaint(parseStroke(parser));
-                        iRect.setStrokeWidth(getFloat(parser, "stroke-width"));
-
-                        iRect.setX(getFloat(parser, "x"));
-                        iRect.setY(getFloat(parser, "y"));
-                        iRect.setWidth(getFloat(parser, "width"));
-                        iRect.setHeight(getFloat(parser, "height"));
-                        iRect.setRx(getFloat(parser, "rx"));
-                        iRect.setRy(getFloat(parser, "ry"));
+                        IRect iRect = new IRect(getFloat(parser, "x"), getFloat(parser, "y"),
+                                getFloat(parser, "width"), getFloat(parser, "height"),
+                                getFloat(parser, "rx"), getFloat(parser, "ry"));
+                        parseDrawable(iRect, parser);
                         svg.getDrawables().add(iRect);
+//                        svg.getPaths().add(transform(iRect));
                         break;
                     case "circle":
                         if (svg == null) {
                             break;
                         }
-                        ICircle iCircle = new ICircle();
-                        iCircle.setFillPaint(parseFill(parser));
-                        iCircle.setStrokePaint(parseStroke(parser));
-                        iCircle.setStrokeWidth(getFloat(parser, "stroke-width"));
-
-                        iCircle.setCx(getFloat(parser, "cx"));
-                        iCircle.setCy(getFloat(parser, "cy"));
-                        iCircle.setR(getFloat(parser, "r"));
+                        ICircle iCircle = new ICircle(getFloat(parser, "cx"), getFloat(parser, "cy"),
+                                getFloat(parser, "r"));
+                        parseDrawable(iCircle, parser);
                         svg.getDrawables().add(iCircle);
+//                        svg.getPaths().add(transform(iCircle));
+                        break;
+                    case "ellipse":
+                        if (svg == null) {
+                            break;
+                        }
+                        IEllipse iEllipse = new IEllipse(getFloat(parser, "cx"), getFloat(parser, "cy"),
+                                getFloat(parser, "rx"), getFloat(parser, "ry"));
+                        parseDrawable(iEllipse, parser);
+                        svg.getDrawables().add(iEllipse);
+//                        svg.getPaths().add(transform(iEllipse));
+                        break;
+                    case "line":
+                        if (svg == null) {
+                            break;
+                        }
+                        String linePath = "M" + getFloat(parser, "x1") + "," + getFloat(parser, "y1")
+                                + "L" + getFloat(parser, "x2") + "," + getFloat(parser, "y2");
+                        IPath line = new IPath(pathFormat(linePath));
+                        parseDrawable(line, parser);
+                        svg.getDrawables().add(line);
+//                        svg.getPaths().add(transform(line));
+                        break;
+                    case "polyline":
+                        if (svg == null) {
+                            break;
+                        }
+                        float[] polylinePoints = getFloats(getString(parser, "points"));
+                        String polylinePath = "M" + polylinePoints[0] + " " + polylinePoints[1];
+                        for (int i = 0; i < polylinePoints.length; i += 2) {
+                            polylinePath += "L" + polylinePoints[i] + " " + polylinePoints[i + 1];
+                        }
+                        IPath polyline = new IPath(pathFormat(polylinePath));
+                        parseDrawable(polyline, parser);
+                        svg.getDrawables().add(polyline);
+//                        svg.getPaths().add(transform(polyline));
+                        break;
+                    case "polygon":
+                        if (svg == null) {
+                            break;
+                        }
+                        float[] polygonPoints = getFloats(getString(parser, "points"));
+                        String polygonPath = "M" + polygonPoints[0] + " " + polygonPoints[1];
+                        for (int i = 0; i < polygonPoints.length; i += 2) {
+                            polygonPath += "L" + polygonPoints[i] + " " + polygonPoints[i + 1];
+                        }
+                        polygonPath += "z";
+                        IPath polygon = new IPath(pathFormat(polygonPath));
+                        parseDrawable(polygon, parser);
+                        svg.getDrawables().add(polygon);
+//                        svg.getPaths().add(transform(polygon));
                         break;
                     case "defs":
                         if (!parser.isEmptyElementTag()) {
@@ -129,17 +164,25 @@ public class SVGParser {
         return svg;
     }
 
+    private static void parseDrawable(Drawable drawable, XmlPullParser parser) {
+        drawable.setFillPaint(parseFill(parser));
+        drawable.setStrokePaint(parseStroke(parser));
+        drawable.setStrokeWidth(getFloat(parser, "stroke-width"));
+    }
+
+    private static Path transform(Drawable drawable) {
+        Path path = new Path();
+        FigureHelper.transform(path, drawable);
+        return path;
+    }
+
     private static Paint parseStroke(XmlPullParser parser) {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setDither(true);
         paint.setStyle(Paint.Style.STROKE);
 
-//        paint.setPathEffect(new CornerPathEffect(100));
-//        paint.setPathEffect(new DashPathEffect(new float[]{50, 20}, 0));
-//        paint.setPathEffect(new ComposePathEffect(new CornerPathEffect(1), new DashPathEffect(new float[]{50, 20}, 0)));
-
-        paint.setColor(ParserHelper.getColor(parser, "stroke"));
+        paint.setColor(ParserHelper.getColor(parser, "stroke", 0x00000000));
         paint.setStrokeWidth(getFloat(parser, "stroke-width"));
 
         String cap = getString(parser, "stroke-linecap");
@@ -196,6 +239,13 @@ public class SVGParser {
             }
         }
 
+        // TODO: 2017/9/11 path衔接问题解决方案 - 待改善
+//        if (paint.getPathEffect() == null) {
+//            paint.setPathEffect(new CornerPathEffect(0.0000001f));
+//        } else {
+//            paint.setPathEffect(new ComposePathEffect(paint.getPathEffect(), new CornerPathEffect(32)));
+//        }
+
         return paint;
     }
 
@@ -205,7 +255,7 @@ public class SVGParser {
         paint.setDither(true);
         paint.setStyle(Paint.Style.FILL);
 
-        paint.setColor(ParserHelper.getColor(parser, "fill"));
+        paint.setColor(ParserHelper.getColor(parser, "fill", 0xff000000));
 
         String fillOpacity = getString(parser, "fill-opacity");
         if (fillOpacity != null) {

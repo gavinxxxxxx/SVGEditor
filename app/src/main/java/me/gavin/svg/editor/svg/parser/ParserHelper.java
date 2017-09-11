@@ -24,7 +24,7 @@ class ParserHelper {
     static float getFloat(XmlPullParser parser, String name) {
         try {
             return Float.parseFloat(getString(parser, name));
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             return 0;
         }
     }
@@ -57,28 +57,31 @@ class ParserHelper {
         }
     }
 
-    static int getColor(XmlPullParser parser, String name) {
-        return getColor(getString(parser, name));
+    static int getColor(XmlPullParser parser, String name, int defaultValue) {
+        return getColor(getString(parser, name), defaultValue);
     }
 
-    static int getColor(String colorStr) {
-        if (TextUtils.isEmpty(colorStr) || "none".equalsIgnoreCase(colorStr)) {
+    static int getColor(String colorStr, int defaultValue) {
+        if (TextUtils.isEmpty(colorStr)) {
+            return defaultValue;
+        } else if ("none".equalsIgnoreCase(colorStr)) {
             return 0;
         } else if (colorStr.startsWith("#")) {
             try {
                 return Color.parseColor(colorStr);
             } catch (IllegalArgumentException e) {
-                return 0;
+                return defaultValue;
             }
         } else if (colorStr.startsWith("rgb(") && colorStr.endsWith(")")) {
             String values[] = colorStr.substring(4, colorStr.length() - 1).split(",");
             try {
                 return getColor(getInt(values[0]), getInt(values[1]), getInt(values[2]));
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                return 0;
+                return defaultValue;
             }
         } else {
-            return Colors.mapColour(colorStr);
+            Integer color = Colors.mapColour(colorStr);
+            return color == null ? defaultValue : color;
         }
     }
 
@@ -109,8 +112,8 @@ class ParserHelper {
         }
         // 逗号全部转换成空格
         path = path.trim().replaceAll(",", " ");
-        // 负参分离
-        String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z]\\s+]";
+        // 法参聚合
+        String rex = "[M|m|L|l|H|h|V|v|Q|q|T|t|C|c|S|s|A|a|Z|z]\\s+";
         Pattern pattern = Pattern.compile(rex);
         Matcher matcher = pattern.matcher(path);
         while (matcher.find()) {

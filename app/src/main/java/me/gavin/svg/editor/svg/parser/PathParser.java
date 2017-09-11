@@ -27,13 +27,15 @@ class PathParser {
         }
         for (int i = 0; i < args.length; i += 2) {
             if (f.startsWith("M")) {
-                points[0].x = Float.parseFloat(args[i]);
-                points[0].y = Float.parseFloat(args[i + 1]);
+                points[1].x = Float.parseFloat(args[i]);
+                points[1].y = Float.parseFloat(args[i + 1]);
             } else if (f.startsWith("m")) {
-                points[0].x += Float.parseFloat(args[i]);
-                points[0].y += Float.parseFloat(args[i + 1]);
+                points[1].x += Float.parseFloat(args[i]);
+                points[1].y += Float.parseFloat(args[i + 1]);
             }
-            path.moveTo(points[0].x, points[0].y);
+            points[0].x = points[1].x;
+            points[0].y = points[1].y;
+            path.moveTo(points[1].x, points[1].y);
         }
     }
 
@@ -54,13 +56,13 @@ class PathParser {
         }
         for (int i = 0; i < args.length; i += 2) {
             if (f.startsWith("L")) {
-                points[0].x = Float.parseFloat(args[i]);
-                points[0].y = Float.parseFloat(args[i + 1]);
+                points[1].x = Float.parseFloat(args[i]);
+                points[1].y = Float.parseFloat(args[i + 1]);
             } else if (f.startsWith("l")) {
-                points[0].x += Float.parseFloat(args[i]);
-                points[0].y += Float.parseFloat(args[i + 1]);
+                points[1].x += Float.parseFloat(args[i]);
+                points[1].y += Float.parseFloat(args[i + 1]);
             }
-            path.lineTo(points[0].x, points[0].y);
+            path.lineTo(points[1].x, points[1].y);
         }
     }
 
@@ -78,11 +80,11 @@ class PathParser {
         String[] args = f.substring(1).split(" ");
         for (String s : args) {
             if (f.startsWith("H")) {
-                points[0].x = Float.parseFloat(s);
+                points[1].x = Float.parseFloat(s);
             } else if (f.startsWith("h")) {
-                points[0].x += Float.parseFloat(s);
+                points[1].x += Float.parseFloat(s);
             }
-            path.lineTo(points[0].x, points[0].y);
+            path.lineTo(points[1].x, points[1].y);
         }
     }
 
@@ -100,11 +102,11 @@ class PathParser {
         String[] args = f.substring(1).split(" ");
         for (String s : args) {
             if (f.startsWith("V")) {
-                points[0].y = Float.parseFloat(s);
+                points[1].y = Float.parseFloat(s);
             } else if (f.startsWith("v")) {
-                points[0].y += Float.parseFloat(s);
+                points[1].y += Float.parseFloat(s);
             }
-            path.lineTo(points[0].x, points[0].y);
+            path.lineTo(points[1].x, points[1].y);
         }
     }
 
@@ -125,17 +127,17 @@ class PathParser {
         }
         for (int i = 0; i < args.length; i += 4) {
             if (f.startsWith("Q")) {
-                points[1].x = Float.parseFloat(args[i]);
-                points[1].y = Float.parseFloat(args[i + 1]);
-                points[0].x = Float.parseFloat(args[i + 2]);
-                points[0].y = Float.parseFloat(args[i + 3]);
+                points[2].x = Float.parseFloat(args[i]);
+                points[2].y = Float.parseFloat(args[i + 1]);
+                points[1].x = Float.parseFloat(args[i + 2]);
+                points[1].y = Float.parseFloat(args[i + 3]);
             } else if (f.startsWith("q")) {
-                points[1].x += Float.parseFloat(args[i]);
-                points[1].y += Float.parseFloat(args[i + 1]);
-                points[0].x += Float.parseFloat(args[i + 2]);
-                points[0].y += Float.parseFloat(args[i + 3]);
+                points[2].x += Float.parseFloat(args[i]);
+                points[2].y += Float.parseFloat(args[i + 1]);
+                points[1].x += Float.parseFloat(args[i + 2]);
+                points[1].y += Float.parseFloat(args[i + 3]);
             }
-            path.quadTo(points[1].x, points[1].y, points[0].x, points[0].y);
+            path.quadTo(points[2].x, points[2].y, points[1].x, points[1].y);
         }
     }
 
@@ -155,16 +157,16 @@ class PathParser {
             throw new IllegalArgumentException("path parse error for T(t): parameter error @" + f);
         }
         for (int i = 0; i < args.length; i += 2) {
-            points[1].x = points[0].x + points[0].x - points[1].x;
-            points[1].y = points[0].y + points[0].y - points[1].y;
+            points[2].x = points[1].x + points[1].x - points[2].x;
+            points[2].y = points[1].y + points[1].y - points[2].y;
             if (f.startsWith("T")) {
-                points[0].x = Float.parseFloat(args[i]);
-                points[0].y = Float.parseFloat(args[i + 1]);
+                points[1].x = Float.parseFloat(args[i]);
+                points[1].y = Float.parseFloat(args[i + 1]);
             } else if (f.startsWith("t")) {
-                points[0].x += Float.parseFloat(args[i]);
-                points[0].y += Float.parseFloat(args[i + 1]);
+                points[1].x += Float.parseFloat(args[i]);
+                points[1].y += Float.parseFloat(args[i + 1]);
             }
-            path.quadTo(points[1].x, points[1].y, points[0].x, points[0].y);
+            path.quadTo(points[2].x, points[2].y, points[1].x, points[1].y);
         }
     }
 
@@ -188,19 +190,19 @@ class PathParser {
             if (f.startsWith("C")) {
                 x1 = Float.parseFloat(args[i]);
                 y1 = Float.parseFloat(args[i + 1]);
-                points[1].x = Float.parseFloat(args[i + 2]);
-                points[1].y = Float.parseFloat(args[i + 3]);
-                points[0].x = Float.parseFloat(args[i + 4]);
-                points[0].y = Float.parseFloat(args[i + 5]);
+                points[2].x = Float.parseFloat(args[i + 2]);
+                points[2].y = Float.parseFloat(args[i + 3]);
+                points[1].x = Float.parseFloat(args[i + 4]);
+                points[1].y = Float.parseFloat(args[i + 5]);
             } else if (f.startsWith("c")) {
-                x1 = points[0].x + Float.parseFloat(args[i]);
-                y1 = points[0].y + Float.parseFloat(args[i + 1]);
-                points[1].x = points[0].x + Float.parseFloat(args[i + 2]);
-                points[1].y = points[0].y + Float.parseFloat(args[i + 3]);
-                points[0].x += Float.parseFloat(args[i + 4]);
-                points[0].y += Float.parseFloat(args[i + 5]);
+                x1 = points[1].x + Float.parseFloat(args[i]);
+                y1 = points[1].y + Float.parseFloat(args[i + 1]);
+                points[2].x = points[1].x + Float.parseFloat(args[i + 2]);
+                points[2].y = points[1].y + Float.parseFloat(args[i + 3]);
+                points[1].x += Float.parseFloat(args[i + 4]);
+                points[1].y += Float.parseFloat(args[i + 5]);
             }
-            path.cubicTo(x1, y1, points[1].x, points[1].y, points[0].x, points[0].y);
+            path.cubicTo(x1, y1, points[2].x, points[2].y, points[1].x, points[1].y);
         }
     }
 
@@ -220,20 +222,20 @@ class PathParser {
             throw new IllegalArgumentException("path parse error for C(c): parameter error @" + f);
         }
         for (int i = 0; i < args.length; i += 4) {
-            float x1 = points[0].x + points[0].x - points[1].x;
-            float y1 = points[0].y + points[0].y - points[1].y;
+            float x1 = points[1].x + points[1].x - points[2].x;
+            float y1 = points[1].y + points[1].y - points[2].y;
             if (f.startsWith("S")) {
-                points[1].x = Float.parseFloat(args[i]);
-                points[1].y = Float.parseFloat(args[i + 1]);
-                points[0].x = Float.parseFloat(args[i + 2]);
-                points[0].y = Float.parseFloat(args[i + 3]);
+                points[2].x = Float.parseFloat(args[i]);
+                points[2].y = Float.parseFloat(args[i + 1]);
+                points[1].x = Float.parseFloat(args[i + 2]);
+                points[1].y = Float.parseFloat(args[i + 3]);
             } else if (f.startsWith("s")) {
-                points[1].x = points[0].x + Float.parseFloat(args[i]);
-                points[1].y = points[0].y + Float.parseFloat(args[i + 1]);
-                points[0].x += Float.parseFloat(args[i + 2]);
-                points[0].y += Float.parseFloat(args[i + 3]);
+                points[2].x = points[1].x + Float.parseFloat(args[i]);
+                points[2].y = points[1].y + Float.parseFloat(args[i + 1]);
+                points[1].x += Float.parseFloat(args[i + 2]);
+                points[1].y += Float.parseFloat(args[i + 3]);
             }
-            path.cubicTo(x1, y1, points[1].x, points[1].y, points[0].x, points[0].y);
+            path.cubicTo(x1, y1, points[2].x, points[2].y, points[1].x, points[1].y);
         }
     }
 
@@ -255,8 +257,8 @@ class PathParser {
         for (int i = 0; i < args.length; i += 7) {
             if (f.startsWith("A")) {
                 ArcHelper.drawArc(path,
-                        points[0].x,
-                        points[0].y,
+                        points[1].x,
+                        points[1].y,
                         Float.parseFloat(args[5]),
                         Float.parseFloat(args[6]),
                         Float.parseFloat(args[0]),
@@ -264,21 +266,21 @@ class PathParser {
                         Float.parseFloat(args[2]),
                         Integer.parseInt(args[3]),
                         Integer.parseInt(args[4]));
-                points[0].x = Float.parseFloat(args[5]);
-                points[0].y = Float.parseFloat(args[6]);
+                points[1].x = Float.parseFloat(args[5]);
+                points[1].y = Float.parseFloat(args[6]);
             } else if (f.startsWith("a")) {
                 ArcHelper.drawArc(path,
-                        points[0].x,
-                        points[0].y,
-                        points[0].x += Float.parseFloat(args[5]),
-                        points[0].x += Float.parseFloat(args[6]),
+                        points[1].x,
+                        points[1].y,
+                        points[1].x += Float.parseFloat(args[5]),
+                        points[1].x += Float.parseFloat(args[6]),
                         Float.parseFloat(args[0]),
                         Float.parseFloat(args[1]),
                         Float.parseFloat(args[2]),
                         Integer.parseInt(args[3]),
                         Integer.parseInt(args[4]));
-                points[0].x += Float.parseFloat(args[5]);
-                points[0].y += Float.parseFloat(args[6]);
+                points[1].x += Float.parseFloat(args[5]);
+                points[1].y += Float.parseFloat(args[6]);
             }
         }
     }
@@ -287,13 +289,15 @@ class PathParser {
      * 闭合
      */
     static boolean z(String fun) {
-        return fun.startsWith("V") || fun.startsWith("v");
+        return fun.startsWith("Z") || fun.startsWith("z");
     }
 
     /**
      * 闭合
      */
-    static void z(Path path) {
+    static void z(Path path, PointF[] points) {
+        points[1].x = points[0].x;
+        points[1].y = points[0].y;
         path.close();
     }
 

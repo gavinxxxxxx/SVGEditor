@@ -9,58 +9,20 @@ import java.io.Serializable;
  */
 public class IRect extends Drawable implements Serializable {
 
-    private float x;
-    private float y;
-    private float width;
-    private float height;
-    private float rx;
-    private float ry;
+    public final float x;
+    public final float y;
+    public final float width;
+    public final float height;
+    public final float rx;
+    public final float ry;
 
-    public float getX() {
-        return x;
-    }
-
-    public void setX(float x) {
+    public IRect(float x, float y, float width, float height, float rx, float ry) {
         this.x = x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public void setY(float y) {
         this.y = y;
-    }
-
-    public float getWidth() {
-        return width;
-    }
-
-    public void setWidth(float width) {
         this.width = width;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
         this.height = height;
-    }
-
-    public float getRx() {
-        return rx;
-    }
-
-    public void setRx(float rx) {
         this.rx = rx;
-    }
-
-    public float getRy() {
-        return ry;
-    }
-
-    public void setRy(float ry) {
         this.ry = ry;
     }
+
 }
