@@ -26,13 +26,12 @@ public class SVGView extends View {
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
-        SVGViewAttacher.attach(this);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension(MeasureSpec.getMode(
-                widthMeasureSpec) == MeasureSpec.EXACTLY
+        setMeasuredDimension(
+                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
                         ? MeasureSpec.getSize(widthMeasureSpec)
                         : mSvg == null ? 0 : ((int) mSvg.getWidth()),
                 MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY
@@ -42,7 +41,7 @@ public class SVGView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (!drawable()) {
+        if (mSvg == null) {
             return;
         }
 
@@ -64,7 +63,9 @@ public class SVGView extends View {
             FigureHelper.transform(path, mSvg.getDrawables().get(i));
             svg.getPaths().add(path);
         }
-        postScale(Math.min(getWidth() / mSvg.getViewBox().width, getHeight() / mSvg.getViewBox().height), 0, 0);
+        if (mSvg.getViewBox() != null) {
+            postScale(Math.min(getWidth() / mSvg.getViewBox().width, getHeight() / mSvg.getViewBox().height), 0, 0);
+        }
         invalidate();
     }
 
@@ -90,4 +91,13 @@ public class SVGView extends View {
     public boolean drawable() {
         return mSvg != null && mSvg.getDrawables() != null && !mSvg.getDrawables().isEmpty();
     }
+
+    public void setZoomable(boolean zoomable) {
+        if (zoomable) {
+            SVGViewAttacher.attach(this);
+        } else {
+            setOnTouchListener(null);
+        }
+    }
+    
 }

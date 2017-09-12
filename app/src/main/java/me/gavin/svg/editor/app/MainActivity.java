@@ -2,6 +2,7 @@ package me.gavin.svg.editor.app;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -21,39 +22,28 @@ public class MainActivity extends BaseActivity<LayoutRecyclerBinding> {
 
     @Override
     protected void afterCreate(@Nullable Bundle savedInstanceState) {
-        a();
-        s();
-    }
-
-    private void a() {
-//        Observable.just("action/ic_accessible_24px.svg")
-//                .map(s -> getAssets().open(s))
-//                .map(SVGParser::parse)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(v -> binding.sv.set(v), L::e);
-    }
-
-    private void s() {
-        String path = "action";
-        Observable.just(path)
-                .map(s -> getAssets().list(s))
-                .flatMap(Observable::fromArray)
-                .filter(s -> s.endsWith(".svg"))
-                .map(s -> getAssets().open(path + "/" + s))
+        Observable.just("", "action")
+                .flatMap(path -> Observable.just(path)
+                        .map(getAssets()::list)
+                        .flatMap(Observable::fromArray)
+                        .filter(s -> s.endsWith(".svg"))
+                        .map(s -> String.format("%s%s",
+                                TextUtils.isEmpty(path) ? "" : path + "/", s)))
+                .map(getAssets()::open)
                 .map(SVGParser::parse)
                 .map(svg -> {
                     svg.setWidth(256);
                     svg.setHeight(256);
-                    L.e(svg);
                     return svg;
                 })
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(vectors -> {
-                    binding.recycler.setAdapter(new SVGAdapter(this, vectors));
-                }, L::e);
+                .subscribe(vectors ->
+                        binding.recycler.setAdapter(new SVGAdapter(this, vectors, svg -> {
+                            binding.sv.set(svg);
+                            binding.sv.setZoomable(true);
+                        })), L::e);
     }
 
 }
