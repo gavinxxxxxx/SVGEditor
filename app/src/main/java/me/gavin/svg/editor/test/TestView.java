@@ -1,32 +1,19 @@
-package me.gavin.svg.editor.svg;
+package me.gavin.svg.editor.test;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
-import me.gavin.svg.editor.svg.model.SVG;
-
-/**
- * SVGView
- *
- * @author gavin.xiong 2017/9/8
- */
-public class SVGView extends View {
-
-    public final Matrix mMatrix = new Matrix();
-
-    private SVG mSvg;
+public class TestView extends View {
 
     private final Paint backgroundPaint, backgroundPaint1;
     private final int backgroundGridWidth = 64;
 
-    public SVGView(Context context, @Nullable AttributeSet attrs) {
+    public TestView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
         backgroundPaint = new Paint();
         backgroundPaint.setColor(0xffffffff);
         backgroundPaint1 = new Paint();
@@ -38,31 +25,25 @@ public class SVGView extends View {
         setMeasuredDimension(
                 MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
                         ? MeasureSpec.getSize(widthMeasureSpec)
-                        : mSvg == null ? 0 : ((int) mSvg.width),
+                        : 1024,
                 MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY
                         ? MeasureSpec.getSize(heightMeasureSpec)
-                        : mSvg == null ? 0 : ((int) mSvg.height));
+                        : 1024);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mSvg == null) {
-            return;
-        }
 
-        drawBackground(canvas);
+        drawBackground(canvas, 512, 512);
 
-        canvas.setMatrix(mMatrix);
-
-        for (int i = 0; i < mSvg.paths.size(); i++) {
-            canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getFillPaint());
-            canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getStrokePaint());
-        }
     }
 
-    private void drawBackground(Canvas canvas) {
-        int widthCount = (getWidth() + backgroundGridWidth - 1) / backgroundGridWidth;
-        int heightCount = (getHeight() + backgroundGridWidth - 1) / backgroundGridWidth;
+    private void drawBackground(Canvas canvas, int width, int height) {
+        int widthCount = (width + backgroundGridWidth - 1) / backgroundGridWidth;
+        int heightCount = (height + backgroundGridWidth - 1) / backgroundGridWidth;
+        int hOffset = (getWidth() - width) / 2;
+        int vOffset = (getHeight() - height) / 2;
+        canvas.translate(hOffset, vOffset);
         for (int v = 0; v < heightCount; v++) {
             for (int h = 0; h < widthCount; h++) {
                 canvas.drawRect(h * backgroundGridWidth, v * backgroundGridWidth,
@@ -76,25 +57,4 @@ public class SVGView extends View {
             }
         }
     }
-
-    public void set(SVG svg) {
-        this.mSvg = svg;
-        mMatrix.reset();
-        float scale = Math.min(getWidth() / mSvg.viewBox.width, getHeight() / mSvg.viewBox.height);
-        mMatrix.postScale(scale, scale, 0, 0);
-        postInvalidate();
-    }
-
-    public boolean drawable() {
-        return mSvg != null && mSvg.paths != null && !mSvg.paths.isEmpty();
-    }
-
-    public void setZoomable(boolean zoomable) {
-        if (zoomable) {
-            SVGViewAttacher.attach(this);
-        } else {
-            setOnTouchListener(null);
-        }
-    }
-
 }

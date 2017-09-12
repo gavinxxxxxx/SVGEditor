@@ -3,8 +3,6 @@ package me.gavin.svg.editor.svg;
 import android.view.MotionEvent;
 import android.view.View;
 
-import me.gavin.svg.editor.util.L;
-
 /**
  * 手势操作助手
  *
@@ -40,7 +38,8 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onDrag(float dx, float dy) {
-        mView.postTranslate(dx, dy);
+        mView.mMatrix.postTranslate(dx, dy);
+        mView.postInvalidate();
     }
 
     @Override
@@ -50,12 +49,14 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onScale(float scaleFactor, float focusX, float focusY) {
-        mView.postScale(scaleFactor, focusX, focusY);
+        mView.mMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
+        mView.postInvalidate();
     }
 
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
-        L.e("onRotate");
+        mView.mMatrix.postRotate(degrees, focusX, focusY);
+        mView.postInvalidate();
     }
 
 }

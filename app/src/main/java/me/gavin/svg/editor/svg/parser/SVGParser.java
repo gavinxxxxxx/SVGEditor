@@ -2,8 +2,11 @@ package me.gavin.svg.editor.svg.parser;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.graphics.ComposePathEffect;
+import android.graphics.CornerPathEffect;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.support.annotation.XmlRes;
 import android.util.Xml;
 
@@ -67,8 +70,7 @@ public class SVGParser {
                             break;
                         }
                         IPath iPath = new IPath(pathFormat(getString(parser, "d")));
-                        parseDrawable(iPath, parser);
-                        svg.drawables.add(iPath);
+                        transformDrawable(svg, iPath, parser);
                         break;
                     case "rect":
                         if (svg == null) {
@@ -77,8 +79,7 @@ public class SVGParser {
                         IRect iRect = new IRect(getFloat(parser, "x"), getFloat(parser, "y"),
                                 getFloat(parser, "width"), getFloat(parser, "height"),
                                 getFloat(parser, "rx"), getFloat(parser, "ry"));
-                        parseDrawable(iRect, parser);
-                        svg.drawables.add(iRect);
+                        transformDrawable(svg, iRect, parser);
                         break;
                     case "circle":
                         if (svg == null) {
@@ -86,8 +87,7 @@ public class SVGParser {
                         }
                         ICircle iCircle = new ICircle(getFloat(parser, "cx"), getFloat(parser, "cy"),
                                 getFloat(parser, "r"));
-                        parseDrawable(iCircle, parser);
-                        svg.drawables.add(iCircle);
+                        transformDrawable(svg, iCircle, parser);
                         break;
                     case "ellipse":
                         if (svg == null) {
@@ -95,8 +95,7 @@ public class SVGParser {
                         }
                         IEllipse iEllipse = new IEllipse(getFloat(parser, "cx"), getFloat(parser, "cy"),
                                 getFloat(parser, "rx"), getFloat(parser, "ry"));
-                        parseDrawable(iEllipse, parser);
-                        svg.drawables.add(iEllipse);
+                        transformDrawable(svg, iEllipse, parser);
                         break;
                     case "line":
                         if (svg == null) {
@@ -105,8 +104,7 @@ public class SVGParser {
                         String linePath = "M" + getFloat(parser, "x1") + "," + getFloat(parser, "y1")
                                 + "L" + getFloat(parser, "x2") + "," + getFloat(parser, "y2");
                         IPath line = new IPath(pathFormat(linePath));
-                        parseDrawable(line, parser);
-                        svg.drawables.add(line);
+                        transformDrawable(svg, line, parser);
                         break;
                     case "polyline":
                         if (svg == null) {
@@ -118,8 +116,7 @@ public class SVGParser {
                             polylinePath += "L" + polylinePoints[i] + " " + polylinePoints[i + 1];
                         }
                         IPath polyline = new IPath(pathFormat(polylinePath));
-                        parseDrawable(polyline, parser);
-                        svg.drawables.add(polyline);
+                        transformDrawable(svg, polyline, parser);
                         break;
                     case "polygon":
                         if (svg == null) {
@@ -132,8 +129,7 @@ public class SVGParser {
                         }
                         polygonPath += "z";
                         IPath polygon = new IPath(pathFormat(polygonPath));
-                        parseDrawable(polygon, parser);
-                        svg.drawables.add(polygon);
+                        transformDrawable(svg, polygon, parser);
                         break;
                     case "defs":
                         if (!parser.isEmptyElementTag()) {
@@ -162,10 +158,15 @@ public class SVGParser {
         return svg;
     }
 
-    private static void parseDrawable(Drawable drawable, XmlPullParser parser) {
+    private static void transformDrawable(SVG svg, Drawable drawable, XmlPullParser parser) {
         drawable.setFillPaint(parseFill(parser));
         drawable.setStrokePaint(parseStroke(parser));
         drawable.setStrokeWidth(getFloat(parser, "stroke-width"));
+        svg.drawables.add(drawable);
+
+        Path path = new Path();
+        FigureHelper.transform(path, drawable);
+        svg.paths.add(path);
     }
 
     private static Paint parseStroke(XmlPullParser parser) {
@@ -233,9 +234,9 @@ public class SVGParser {
 
         // TODO: 2017/9/11 path衔接问题解决方案 - 待改善
 //        if (paint.getPathEffect() == null) {
-//            paint.setPathEffect(new CornerPathEffect(0.0000001f));
+//            paint.setPathEffect(new CornerPathEffect(0.001f));
 //        } else {
-//            paint.setPathEffect(new ComposePathEffect(paint.getPathEffect(), new CornerPathEffect(32)));
+//            paint.setPathEffect(new ComposePathEffect(paint.getPathEffect(), new CornerPathEffect(0.001f)));
 //        }
 
         return paint;
