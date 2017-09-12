@@ -31,11 +31,6 @@ public class MainActivity extends BaseActivity<LayoutRecyclerBinding> {
                                 TextUtils.isEmpty(path) ? "" : path + "/", s)))
                 .map(getAssets()::open)
                 .map(SVGParser::parse)
-                .map(svg -> {
-                    svg.setWidth(256);
-                    svg.setHeight(256);
-                    return svg;
-                })
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

@@ -3,6 +3,7 @@ package me.gavin.svg.editor.svg;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -23,9 +24,16 @@ public class SVGView extends View {
 
     private SVG mSvg;
 
+    private final Paint backgroundPaint, backgroundPaint1;
+    private final int backgroundGridWidth = 56;
+
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
+        backgroundPaint = new Paint();
+        backgroundPaint.setColor(0xffffffff);
+        backgroundPaint1 = new Paint();
+        backgroundPaint1.setColor(0xffcccccc);
     }
 
     @Override
@@ -33,10 +41,10 @@ public class SVGView extends View {
         setMeasuredDimension(
                 MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
                         ? MeasureSpec.getSize(widthMeasureSpec)
-                        : mSvg == null ? 0 : ((int) mSvg.getWidth()),
+                        : mSvg == null ? 0 : ((int) mSvg.width),
                 MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY
                         ? MeasureSpec.getSize(heightMeasureSpec)
-                        : mSvg == null ? 0 : ((int) mSvg.getHeight()));
+                        : mSvg == null ? 0 : ((int) mSvg.height));
     }
 
     @Override
@@ -45,27 +53,44 @@ public class SVGView extends View {
             return;
         }
 
-        for (int i = 0; i < mSvg.getDrawables().size(); i++) {
-            mSvg.getDrawables().get(i).getStrokePaint().setStrokeWidth(
-                    mSvg.getDrawables().get(i).getStrokeWidth() * mScale);
+        drawBackground(canvas);
 
-            canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getFillPaint());
-            canvas.drawPath(mSvg.getPaths().get(i), mSvg.getDrawables().get(i).getStrokePaint());
+        for (int i = 0; i < mSvg.drawables.size(); i++) {
+            mSvg.drawables.get(i).getStrokePaint().setStrokeWidth(
+                    mSvg.drawables.get(i).getStrokeWidth() * mScale);
+
+            canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getFillPaint());
+            canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getStrokePaint());
+        }
+    }
+
+    private void drawBackground(Canvas canvas) {
+        int widthCount = (getWidth() + backgroundGridWidth - 1) / backgroundGridWidth;
+        int heightCount = (getHeight() + backgroundGridWidth - 1) / backgroundGridWidth;
+        for (int v = 0; v < heightCount; v++) {
+            for (int h = 0; h < widthCount; h++) {
+                canvas.drawRect(h * backgroundGridWidth, v * backgroundGridWidth,
+                        h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth / 2, backgroundPaint);
+                canvas.drawRect(h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth,
+                        h * backgroundGridWidth + backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth / 2, backgroundPaint1);
+                canvas.drawRect(h * backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth / 2,
+                        h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth, backgroundPaint1);
+                canvas.drawRect(h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth / 2,
+                        h * backgroundGridWidth + backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth, backgroundPaint);
+            }
         }
     }
 
     public void set(SVG svg) {
         this.mSvg = svg;
         mScale = 1f;
-        mSvg.getPaths().clear();
-        for (int i = 0; i < mSvg.getDrawables().size(); i++) {
+        mSvg.paths.clear();
+        for (int i = 0; i < mSvg.drawables.size(); i++) {
             Path path = new Path();
-            FigureHelper.transform(path, mSvg.getDrawables().get(i));
-            svg.getPaths().add(path);
+            FigureHelper.transform(path, mSvg.drawables.get(i));
+            svg.paths.add(path);
         }
-        if (mSvg.getViewBox() != null) {
-            postScale(Math.min(getWidth() / mSvg.getViewBox().width, getHeight() / mSvg.getViewBox().height), 0, 0);
-        }
+        postScale(Math.min(getWidth() / mSvg.viewBox.width, getHeight() / mSvg.viewBox.height), 0, 0);
         invalidate();
     }
 
@@ -73,7 +98,7 @@ public class SVGView extends View {
         mMatrix.reset();
         mMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
         mScale *= scaleFactor;
-        for (Path path : mSvg.getPaths()) {
+        for (Path path : mSvg.paths) {
             path.transform(mMatrix);
         }
         invalidate();
@@ -82,14 +107,14 @@ public class SVGView extends View {
     public void postTranslate(float dx, float dy) {
         mMatrix.reset();
         mMatrix.postTranslate(dx, dy);
-        for (Path path : mSvg.getPaths()) {
+        for (Path path : mSvg.paths) {
             path.transform(mMatrix);
         }
         invalidate();
     }
 
     public boolean drawable() {
-        return mSvg != null && mSvg.getDrawables() != null && !mSvg.getDrawables().isEmpty();
+        return mSvg != null && mSvg.drawables != null && !mSvg.drawables.isEmpty();
     }
 
     public void setZoomable(boolean zoomable) {
@@ -99,5 +124,5 @@ public class SVGView extends View {
             setOnTouchListener(null);
         }
     }
-    
+
 }

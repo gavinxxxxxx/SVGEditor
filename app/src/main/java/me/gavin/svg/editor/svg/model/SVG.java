@@ -13,60 +13,27 @@ import java.util.List;
  */
 public class SVG implements Serializable {
 
-    private float width;
-    private float height;
-    private ViewBox viewBox;
-    private String preserveAspectRatio;
-    private String style;
-    private List<Drawable> drawables = new ArrayList<>();
-    private List<Path> paths = new ArrayList<>();
+    public float width;
+    public float height;
+    public ViewBox viewBox;
+    public String title;
+    public String desc;
+    public String preserveAspectRatio;
+    public String style;
+    public List<Drawable> drawables = new ArrayList<>();
+    public List<Path> paths = new ArrayList<>();
 
-    public float getWidth() {
-        return width;
+    public SVG(float width, float height) {
+        this(width, height, null);
     }
 
-    public void setWidth(float width) {
+    public SVG(float width, float height, ViewBox viewBox) {
         this.width = width;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
         this.height = height;
-    }
-
-    public ViewBox getViewBox() {
-        return viewBox;
-    }
-
-    public void setViewBox(ViewBox viewBox) {
         this.viewBox = viewBox;
-    }
-
-    public String getPreserveAspectRatio() {
-        return preserveAspectRatio;
-    }
-
-    public void setPreserveAspectRatio(String preserveAspectRatio) {
-        this.preserveAspectRatio = preserveAspectRatio;
-    }
-
-    public String getStyle() {
-        return style;
-    }
-
-    public void setStyle(String style) {
-        this.style = style;
-    }
-
-    public List<Drawable> getDrawables() {
-        return drawables;
-    }
-
-    public List<Path> getPaths() {
-        return paths;
+        if (this.viewBox == null) {
+            this.viewBox = new ViewBox(0, 0, width, height);
+        }
     }
 
     @Override

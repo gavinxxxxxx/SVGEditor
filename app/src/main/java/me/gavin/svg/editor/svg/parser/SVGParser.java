@@ -4,7 +4,6 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.support.annotation.XmlRes;
 import android.util.Xml;
 
@@ -54,16 +53,14 @@ public class SVGParser {
             if (parser.getEventType() == XmlPullParser.START_TAG) {
                 switch (parser.getName()) {
                     case "svg":
-                        svg = new SVG();
-                        svg.setWidth(getFloat(parser, "width"));
-                        svg.setHeight(getFloat(parser, "height"));
+                        svg = new SVG(getFloat(parser, "width"), getFloat(parser, "height"));
                         String viewBox = getString(parser, "viewBox");
                         if (viewBox != null) {
                             float[] fs = getFloats(viewBox);
-                            svg.setViewBox(new ViewBox(fs));
+                            svg.viewBox = new ViewBox(fs);
                         }
-                        svg.setPreserveAspectRatio(getString(parser, "preserveAspectRatio"));
-                        svg.setStyle(getString(parser, "style"));
+                        svg.preserveAspectRatio = getString(parser, "preserveAspectRatio");
+                        svg.style = getString(parser, "style");
                         break;
                     case "path":
                         if (svg == null) {
@@ -71,8 +68,7 @@ public class SVGParser {
                         }
                         IPath iPath = new IPath(pathFormat(getString(parser, "d")));
                         parseDrawable(iPath, parser);
-                        svg.getDrawables().add(iPath);
-//                        svg.getPaths().add(transform(iPath));
+                        svg.drawables.add(iPath);
                         break;
                     case "rect":
                         if (svg == null) {
@@ -82,8 +78,7 @@ public class SVGParser {
                                 getFloat(parser, "width"), getFloat(parser, "height"),
                                 getFloat(parser, "rx"), getFloat(parser, "ry"));
                         parseDrawable(iRect, parser);
-                        svg.getDrawables().add(iRect);
-//                        svg.getPaths().add(transform(iRect));
+                        svg.drawables.add(iRect);
                         break;
                     case "circle":
                         if (svg == null) {
@@ -92,8 +87,7 @@ public class SVGParser {
                         ICircle iCircle = new ICircle(getFloat(parser, "cx"), getFloat(parser, "cy"),
                                 getFloat(parser, "r"));
                         parseDrawable(iCircle, parser);
-                        svg.getDrawables().add(iCircle);
-//                        svg.getPaths().add(transform(iCircle));
+                        svg.drawables.add(iCircle);
                         break;
                     case "ellipse":
                         if (svg == null) {
@@ -102,8 +96,7 @@ public class SVGParser {
                         IEllipse iEllipse = new IEllipse(getFloat(parser, "cx"), getFloat(parser, "cy"),
                                 getFloat(parser, "rx"), getFloat(parser, "ry"));
                         parseDrawable(iEllipse, parser);
-                        svg.getDrawables().add(iEllipse);
-//                        svg.getPaths().add(transform(iEllipse));
+                        svg.drawables.add(iEllipse);
                         break;
                     case "line":
                         if (svg == null) {
@@ -113,8 +106,7 @@ public class SVGParser {
                                 + "L" + getFloat(parser, "x2") + "," + getFloat(parser, "y2");
                         IPath line = new IPath(pathFormat(linePath));
                         parseDrawable(line, parser);
-                        svg.getDrawables().add(line);
-//                        svg.getPaths().add(transform(line));
+                        svg.drawables.add(line);
                         break;
                     case "polyline":
                         if (svg == null) {
@@ -127,8 +119,7 @@ public class SVGParser {
                         }
                         IPath polyline = new IPath(pathFormat(polylinePath));
                         parseDrawable(polyline, parser);
-                        svg.getDrawables().add(polyline);
-//                        svg.getPaths().add(transform(polyline));
+                        svg.drawables.add(polyline);
                         break;
                     case "polygon":
                         if (svg == null) {
@@ -142,8 +133,7 @@ public class SVGParser {
                         polygonPath += "z";
                         IPath polygon = new IPath(pathFormat(polygonPath));
                         parseDrawable(polygon, parser);
-                        svg.getDrawables().add(polygon);
-//                        svg.getPaths().add(transform(polygon));
+                        svg.drawables.add(polygon);
                         break;
                     case "defs":
                         if (!parser.isEmptyElementTag()) {
@@ -151,7 +141,15 @@ public class SVGParser {
                         }
                         break;
                     case "title":
+                        if (svg != null) {
+                            svg.title = parser.getText();
+                        }
+                        break;
                     case "desc":
+                        if (svg != null) {
+                            svg.desc = parser.getText();
+                        }
+                        break;
                     case "linearGradient":
                     case "filter":
                         break;
@@ -168,12 +166,6 @@ public class SVGParser {
         drawable.setFillPaint(parseFill(parser));
         drawable.setStrokePaint(parseStroke(parser));
         drawable.setStrokeWidth(getFloat(parser, "stroke-width"));
-    }
-
-    private static Path transform(Drawable drawable) {
-        Path path = new Path();
-        FigureHelper.transform(path, drawable);
-        return path;
     }
 
     private static Paint parseStroke(XmlPullParser parser) {
@@ -265,4 +257,5 @@ public class SVGParser {
 
         return paint;
     }
+
 }
