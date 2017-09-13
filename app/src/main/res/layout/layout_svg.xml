@@ -2,7 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <me.gavin.svg.editor.svg.SVGView
+    <me.gavin.svg.editor.svg.SVGViewerView
         android:id="@+id/sv"
         android:layout_width="50dp"
         android:layout_height="50dp"

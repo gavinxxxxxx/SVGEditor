@@ -10,7 +10,6 @@ import me.gavin.svg.editor.base.recycler.RecyclerAdapter;
 import me.gavin.svg.editor.base.recycler.RecyclerHolder;
 import me.gavin.svg.editor.databinding.LayoutSvgBinding;
 import me.gavin.svg.editor.svg.model.SVG;
-import me.gavin.svg.editor.util.L;
 
 /**
  * 这里是萌萌哒注释君
@@ -29,10 +28,7 @@ class SVGAdapter extends RecyclerAdapter<SVG, LayoutSvgBinding> {
     @Override
     protected void onBind(RecyclerHolder<LayoutSvgBinding> holder, SVG svg, int position) {
         holder.binding.sv.set(svg);
-        holder.binding.sv.setOnClickListener(v -> {
-            L.e("setOnClickListener");
-            callback.accept(svg);
-        });
+        holder.binding.sv.setOnClickListener(v -> callback.accept(svg));
     }
 
 }

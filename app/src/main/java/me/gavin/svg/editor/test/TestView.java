@@ -33,9 +33,7 @@ public class TestView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-
         drawBackground(canvas, 512, 512);
-
     }
 
     private void drawBackground(Canvas canvas, int width, int height) {

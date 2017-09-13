@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import me.gavin.svg.editor.svg.model.SVG;
+import me.gavin.svg.editor.util.L;
 
 /**
  * SVGView
@@ -17,20 +18,23 @@ import me.gavin.svg.editor.svg.model.SVG;
  */
 public class SVGView extends View {
 
-    public final Matrix mMatrix = new Matrix();
+    public SVG mSvg;
+    private boolean newTag;
 
-    private SVG mSvg;
+    // svg
+    private float mInherentWidthScale, mInherentHeightScale;
 
     private final Paint backgroundPaint, backgroundPaint1;
-    private final int backgroundGridWidth = 64;
+
+    private final float[] mMatrixValues = new float[9];
 
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
         backgroundPaint = new Paint();
-        backgroundPaint.setColor(0xffffffff);
+        backgroundPaint.setColor(0x80ffffff);
         backgroundPaint1 = new Paint();
-        backgroundPaint1.setColor(0xffcccccc);
+        backgroundPaint1.setColor(0x80cccccc);
     }
 
     @Override
@@ -50,9 +54,11 @@ public class SVGView extends View {
             return;
         }
 
-        drawBackground(canvas);
+        drawBefore();
 
-        canvas.setMatrix(mMatrix);
+        canvas.setMatrix(mSvg.matrix);
+
+        drawBackground(canvas);
 
         for (int i = 0; i < mSvg.paths.size(); i++) {
             canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getFillPaint());
@@ -60,29 +66,74 @@ public class SVGView extends View {
         }
     }
 
+    private void drawBefore() {
+        if (newTag) {
+            newTag = false;
+            mSvg.matrix.reset();
+            mInherentWidthScale = mSvg.width / mSvg.viewBox.width;
+            mInherentHeightScale = mSvg.height / mSvg.viewBox.height;
+            mSvg.matrix.postScale(mSvg.width / mSvg.viewBox.width, mSvg.height / mSvg.viewBox.height);
+            float size = Math.min(getWidth(), getHeight()) * 0.8f;
+            float scale = Math.min(size / mSvg.width, size / mSvg.height);
+            mSvg.matrix.postTranslate((getWidth() - mSvg.width) / 2f, (getHeight() - mSvg.height) / 2f);
+            mSvg.matrix.postScale(scale, scale, getWidth() / 2f, getHeight() / 2f);
+        }
+    }
+
     private void drawBackground(Canvas canvas) {
-        int widthCount = (getWidth() + backgroundGridWidth - 1) / backgroundGridWidth;
-        int heightCount = (getHeight() + backgroundGridWidth - 1) / backgroundGridWidth;
-        for (int v = 0; v < heightCount; v++) {
-            for (int h = 0; h < widthCount; h++) {
-                canvas.drawRect(h * backgroundGridWidth, v * backgroundGridWidth,
-                        h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth / 2, backgroundPaint);
-                canvas.drawRect(h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth,
-                        h * backgroundGridWidth + backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth / 2, backgroundPaint1);
-                canvas.drawRect(h * backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth / 2,
-                        h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth, backgroundPaint1);
-                canvas.drawRect(h * backgroundGridWidth + backgroundGridWidth / 2, v * backgroundGridWidth + backgroundGridWidth / 2,
-                        h * backgroundGridWidth + backgroundGridWidth, v * backgroundGridWidth + backgroundGridWidth, backgroundPaint);
+        final float backgroundGridWidth = 64f;
+        float scaleX = getValue(Matrix.MSCALE_X);
+        float scaleY = getValue(Matrix.MSCALE_Y);
+        float gridW = backgroundGridWidth / scaleX;
+        float gridH = backgroundGridWidth / scaleY;
+        float wc = mSvg.width * scaleX / backgroundGridWidth / mInherentWidthScale;
+        float hc = mSvg.height * scaleY / backgroundGridWidth / mInherentHeightScale;
+        int widthCount = ((int) wc);
+        int heightCount = ((int) hc);
+        float wr = wc - widthCount;
+        float hr = hc - heightCount;
+
+        float l, l1, t, t1, r, r1, b, b1;
+        for (int v = 0; v <= heightCount; v++) {
+            for (int h = 0; h <= widthCount; h++) {
+                l = h * gridW;
+                l1 = l + gridW * 0.5f;
+                t = v * gridH;
+                t1 = t + gridH * 0.5f;
+
+                if (v == heightCount) {
+                    L.e(wr);
+                }
+
+                if (h == widthCount && wr > 0) {
+                    r = wr > 0.5f ? l1 : (l + gridW * wr);
+                    r1 = wr > 0.5f ? (l + gridW * wr) : l1;
+                } else {
+                    r = l1;
+                    r1 = l + gridW;
+                }
+                if (v == heightCount && hr > 0) {
+                    b = hr > 0.5f ? t1 : (t + gridH * hr);
+                    b1 = hr > 0.5f ? (t + gridH * hr) : t1;
+                } else {
+                    b = t1;
+                    b1 = t + gridH;
+                }
+
+                canvas.drawRect(l, t, r, b, backgroundPaint);
+                canvas.drawRect(l1, t, r1, b, backgroundPaint1);
+                canvas.drawRect(l, t1, r, b1, backgroundPaint1);
+                canvas.drawRect(l1, t1, r1, b1, backgroundPaint);
             }
         }
+
     }
 
     public void set(SVG svg) {
         this.mSvg = svg;
-        mMatrix.reset();
-        float scale = Math.min(getWidth() / mSvg.viewBox.width, getHeight() / mSvg.viewBox.height);
-        mMatrix.postScale(scale, scale, 0, 0);
-        postInvalidate();
+        newTag = true;
+        requestLayout();
+        invalidate();
     }
 
     public boolean drawable() {
@@ -95,6 +146,11 @@ public class SVGView extends View {
         } else {
             setOnTouchListener(null);
         }
+    }
+
+    private float getValue(int whichValue) {
+        mSvg.matrix.getValues(mMatrixValues);
+        return mMatrixValues[whichValue];
     }
 
 }

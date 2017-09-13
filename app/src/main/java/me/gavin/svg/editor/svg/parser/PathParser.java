@@ -37,6 +37,8 @@ class PathParser {
             points[0].y = points[1].y;
             path.moveTo(points[1].x, points[1].y);
         }
+        points[2].x = points[1].x;
+        points[2].y = points[1].y;
     }
 
     /**
@@ -64,6 +66,8 @@ class PathParser {
             }
             path.lineTo(points[1].x, points[1].y);
         }
+        points[2].x = points[1].x;
+        points[2].y = points[1].y;
     }
 
     /**
@@ -86,6 +90,8 @@ class PathParser {
             }
             path.lineTo(points[1].x, points[1].y);
         }
+        points[2].x = points[1].x;
+        points[2].y = points[1].y;
     }
 
     /**
@@ -108,6 +114,8 @@ class PathParser {
             }
             path.lineTo(points[1].x, points[1].y);
         }
+        points[2].x = points[1].x;
+        points[2].y = points[1].y;
     }
 
     /**
@@ -283,6 +291,8 @@ class PathParser {
                 points[1].y += Float.parseFloat(args[6]);
             }
         }
+        points[2].x = points[1].x;
+        points[2].y = points[1].y;
     }
 
     /**

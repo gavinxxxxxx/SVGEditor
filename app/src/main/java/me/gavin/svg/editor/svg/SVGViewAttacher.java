@@ -38,7 +38,7 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onDrag(float dx, float dy) {
-        mView.mMatrix.postTranslate(dx, dy);
+        mView.mSvg.matrix.postTranslate(dx, dy);
         mView.postInvalidate();
     }
 
@@ -49,13 +49,13 @@ class SVGViewAttacher implements View.OnTouchListener, OnGestureListener {
 
     @Override
     public void onScale(float scaleFactor, float focusX, float focusY) {
-        mView.mMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
+        mView.mSvg.matrix.postScale(scaleFactor, scaleFactor, focusX, focusY);
         mView.postInvalidate();
     }
 
     @Override
     public void onRotate(float degrees, float focusX, float focusY) {
-        mView.mMatrix.postRotate(degrees, focusX, focusY);
+        mView.mSvg.matrix.postRotate(degrees, focusX, focusY);
         mView.postInvalidate();
     }
 

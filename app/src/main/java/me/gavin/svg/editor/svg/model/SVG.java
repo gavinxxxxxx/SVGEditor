@@ -1,5 +1,6 @@
 package me.gavin.svg.editor.svg.model;
 
+import android.graphics.Matrix;
 import android.graphics.Path;
 
 import java.io.Serializable;
@@ -22,6 +23,7 @@ public class SVG implements Serializable {
     public String style;
     public List<Drawable> drawables = new ArrayList<>();
     public List<Path> paths = new ArrayList<>();
+    public final Matrix matrix = new Matrix();
 
     public SVG(float width, float height) {
         this(width, height, null);
