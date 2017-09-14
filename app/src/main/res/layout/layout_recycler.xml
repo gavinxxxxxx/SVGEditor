@@ -16,28 +16,11 @@
             android:orientation="horizontal"
             app:layoutManager="LinearLayoutManager" />
 
-        <FrameLayout
+        <me.gavin.svg.editor.svg.SVGView
+            android:id="@+id/sv"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <View
-                android:layout_width="864px"
-                android:layout_height="864px"
-                android:layout_gravity="center"
-                android:background="@android:color/holo_red_light" />
-
-            <me.gavin.svg.editor.svg.SVGView
-                android:id="@+id/sv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <View
-                android:layout_width="5dp"
-                android:layout_height="5dp"
-                android:layout_gravity="center"
-                android:background="@android:color/holo_green_light" />
-
-        </FrameLayout>
+            android:layout_height="match_parent"
+            android:background="#2b2b2b" />
 
     </LinearLayout>
 

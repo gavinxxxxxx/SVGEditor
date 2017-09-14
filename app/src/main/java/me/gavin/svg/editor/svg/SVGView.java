@@ -9,7 +9,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import me.gavin.svg.editor.svg.model.SVG;
-import me.gavin.svg.editor.util.L;
+
+import static me.gavin.svg.editor.svg.parser.Util.roundToSignificantFigures;
 
 /**
  * SVGView
@@ -28,13 +29,22 @@ public class SVGView extends View {
 
     private final float[] mMatrixValues = new float[9];
 
+    private final Matrix mTextMatrix = new Matrix();
+    private final Paint mTextPaint;
+
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
         backgroundPaint = new Paint();
-        backgroundPaint.setColor(0x80ffffff);
+        backgroundPaint.setColor(0xffffffff);
         backgroundPaint1 = new Paint();
-        backgroundPaint1.setColor(0x80cccccc);
+        backgroundPaint1.setColor(0xffcccccc);
+
+        mTextPaint = new Paint();
+        mTextPaint.setTextSize(18f);
+        mTextPaint.setColor(0xfff5f5f5);
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setShadowLayer(2, 2, 2, 0xff2b2b2b);
     }
 
     @Override
@@ -64,6 +74,8 @@ public class SVGView extends View {
             canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getFillPaint());
             canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getStrokePaint());
         }
+
+        drawText(canvas);
     }
 
     private void drawBefore() {
@@ -72,61 +84,60 @@ public class SVGView extends View {
             mSvg.matrix.reset();
             mInherentWidthScale = mSvg.width / mSvg.viewBox.width;
             mInherentHeightScale = mSvg.height / mSvg.viewBox.height;
-            mSvg.matrix.postScale(mSvg.width / mSvg.viewBox.width, mSvg.height / mSvg.viewBox.height);
+            mSvg.matrix.postScale(mInherentWidthScale, mInherentHeightScale);
+            mSvg.matrix.postTranslate((getWidth() - mSvg.width) / 2f, (getHeight() - mSvg.height) / 2f);
             float size = Math.min(getWidth(), getHeight()) * 0.8f;
             float scale = Math.min(size / mSvg.width, size / mSvg.height);
-            mSvg.matrix.postTranslate((getWidth() - mSvg.width) / 2f, (getHeight() - mSvg.height) / 2f);
             mSvg.matrix.postScale(scale, scale, getWidth() / 2f, getHeight() / 2f);
         }
     }
 
     private void drawBackground(Canvas canvas) {
-        final float backgroundGridWidth = 64f;
-        float scaleX = getValue(Matrix.MSCALE_X);
-        float scaleY = getValue(Matrix.MSCALE_Y);
+        // canvas.drawRect(0, 0, mSvg.width / mInherentWidthScale, mSvg.height / mInherentHeightScale, backgroundPaint1);
+
+        float backgroundGridWidth = 32f;
+
+        mSvg.matrix.getValues(mMatrixValues);
+        float scaleX = mMatrixValues[Matrix.MSCALE_X];
+        float scaleY = mMatrixValues[Matrix.MSCALE_Y];
+        float transX = mMatrixValues[Matrix.MTRANS_X];
+        float transY = mMatrixValues[Matrix.MTRANS_Y];
         float gridW = backgroundGridWidth / scaleX;
         float gridH = backgroundGridWidth / scaleY;
-        float wc = mSvg.width * scaleX / backgroundGridWidth / mInherentWidthScale;
-        float hc = mSvg.height * scaleY / backgroundGridWidth / mInherentHeightScale;
-        int widthCount = ((int) wc);
-        int heightCount = ((int) hc);
-        float wr = wc - widthCount;
-        float hr = hc - heightCount;
+        float errorCorrection = 0.01f / Math.min(scaleX, scaleY);
+        float xcf = mSvg.width * scaleX / mInherentWidthScale / backgroundGridWidth;
+        float ycf = mSvg.height * scaleY / mInherentHeightScale / backgroundGridWidth;
+        int xci = (int) xcf;
+        int yci = (int) ycf;
+        float xr = xcf - xci;
+        float yr = ycf - yci;
 
-        float l, l1, t, t1, r, r1, b, b1;
-        for (int v = 0; v <= heightCount; v++) {
-            for (int h = 0; h <= widthCount; h++) {
-                l = h * gridW;
-                l1 = l + gridW * 0.5f;
-                t = v * gridH;
-                t1 = t + gridH * 0.5f;
-
-                if (v == heightCount) {
-                    L.e(wr);
-                }
-
-                if (h == widthCount && wr > 0) {
-                    r = wr > 0.5f ? l1 : (l + gridW * wr);
-                    r1 = wr > 0.5f ? (l + gridW * wr) : l1;
-                } else {
-                    r = l1;
-                    r1 = l + gridW;
-                }
-                if (v == heightCount && hr > 0) {
-                    b = hr > 0.5f ? t1 : (t + gridH * hr);
-                    b1 = hr > 0.5f ? (t + gridH * hr) : t1;
-                } else {
-                    b = t1;
-                    b1 = t + gridH;
-                }
-
-                canvas.drawRect(l, t, r, b, backgroundPaint);
-                canvas.drawRect(l1, t, r1, b, backgroundPaint1);
-                canvas.drawRect(l, t1, r, b1, backgroundPaint1);
-                canvas.drawRect(l1, t1, r1, b1, backgroundPaint);
+        float l, t, r, b;
+        int ys = Math.max(0, (int) ((0 - transY) / scaleY / gridH));
+        // int ys = Math.max(0, (int) ((0 - transY) / scaleY / gridH) + 1);
+        int xs = Math.max(0, (int) ((0 - transX) / scaleX / gridW));
+        int ye = Math.min(yci, (int) ((getHeight() - transY) / scaleY / gridH));
+        // int ye = Math.min(yci, (int) ((getHeight() - transY) / scaleY / gridH) - 1);
+        int xe = Math.min(xci, (int) ((getWidth() - transX) / scaleX / gridW));
+        for (int y = ys; y <= ye; y++) {
+            for (int x = xs; x <= xe; x++) {
+                l = x * gridW;
+                t = y * gridH;
+                r = l + gridW * (x == xci ? xr : 1);
+                b = t + gridH * (y == yci ? yr : 1);
+                canvas.drawRect(
+                        l - errorCorrection, t - errorCorrection,
+                        r + errorCorrection, b + errorCorrection,
+                        ((x ^ y) & 1) == 1 ? backgroundPaint1 : backgroundPaint);
             }
         }
+    }
 
+    private void drawText(Canvas canvas) {
+        canvas.setMatrix(mTextMatrix);
+        double scale = roundToSignificantFigures(getValue(Matrix.MSCALE_X) / mInherentWidthScale * 100, 3);
+        String scaleStr = String.format("%s%%", scale);
+        canvas.drawText(scaleStr.endsWith(".0%") ? scaleStr.replace(".0", "") : scaleStr, 10, getHeight() - 10, mTextPaint);
     }
 
     public void set(SVG svg) {
