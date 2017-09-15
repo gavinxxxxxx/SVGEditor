@@ -22,7 +22,7 @@ public class MainActivity extends BaseActivity<LayoutRecyclerBinding> {
 
     @Override
     protected void afterCreate(@Nullable Bundle savedInstanceState) {
-        Observable.just("", "action")
+        Observable.just("", "size", "action")
                 .flatMap(path -> Observable.just(path)
                         .map(getAssets()::list)
                         .flatMap(Observable::fromArray)

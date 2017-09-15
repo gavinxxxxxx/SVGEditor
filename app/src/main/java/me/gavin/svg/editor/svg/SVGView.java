@@ -22,8 +22,7 @@ public class SVGView extends View {
     public SVG mSvg;
     private boolean newTag;
 
-    // svg
-    private float mInherentWidthScale, mInherentHeightScale;
+    private float mInherentScale;
 
     private final Paint backgroundPaint, backgroundPaint1;
 
@@ -70,6 +69,14 @@ public class SVGView extends View {
 
         drawBackground(canvas);
 
+        if (mSvg.width / mSvg.height != mSvg.viewBox.width / mSvg.viewBox.height) {
+            canvas.translate(
+                    mSvg.width / mSvg.height > mSvg.viewBox.width / mSvg.viewBox.height
+                            ? (mSvg.width - mSvg.viewBox.width / mSvg.viewBox.height * mSvg.height) / 2 / mInherentScale : 0,
+                    mSvg.width / mSvg.height > mSvg.viewBox.width / mSvg.viewBox.height
+                            ? 0 : (mSvg.height - mSvg.viewBox.height / mSvg.viewBox.width * mSvg.width) / 2 / mInherentScale);
+        }
+
         for (int i = 0; i < mSvg.paths.size(); i++) {
             canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getFillPaint());
             canvas.drawPath(mSvg.paths.get(i), mSvg.drawables.get(i).getStrokePaint());
@@ -82,9 +89,8 @@ public class SVGView extends View {
         if (newTag) {
             newTag = false;
             mSvg.matrix.reset();
-            mInherentWidthScale = mSvg.width / mSvg.viewBox.width;
-            mInherentHeightScale = mSvg.height / mSvg.viewBox.height;
-            mSvg.matrix.postScale(mInherentWidthScale, mInherentHeightScale);
+            mInherentScale = mSvg.getInherentScale();
+            mSvg.matrix.postScale(mInherentScale, mInherentScale);
             mSvg.matrix.postTranslate((getWidth() - mSvg.width) / 2f, (getHeight() - mSvg.height) / 2f);
             float size = Math.min(getWidth(), getHeight()) * 0.8f;
             float scale = Math.min(size / mSvg.width, size / mSvg.height);
@@ -105,19 +111,17 @@ public class SVGView extends View {
         float gridW = backgroundGridWidth / scaleX;
         float gridH = backgroundGridWidth / scaleY;
         float errorCorrection = 0.01f / Math.min(scaleX, scaleY);
-        float xcf = mSvg.width * scaleX / mInherentWidthScale / backgroundGridWidth;
-        float ycf = mSvg.height * scaleY / mInherentHeightScale / backgroundGridWidth;
+        float xcf = mSvg.width * scaleX / mInherentScale / backgroundGridWidth;
+        float ycf = mSvg.height * scaleY / mInherentScale / backgroundGridWidth;
         int xci = (int) xcf;
         int yci = (int) ycf;
         float xr = xcf - xci;
         float yr = ycf - yci;
 
         float l, t, r, b;
-        int ys = Math.max(0, (int) ((0 - transY) / scaleY / gridH));
-        // int ys = Math.max(0, (int) ((0 - transY) / scaleY / gridH) + 1);
+        int ys = Math.max(0, (int) ((0 - transY) / scaleY / gridH)); // + 1 test
         int xs = Math.max(0, (int) ((0 - transX) / scaleX / gridW));
-        int ye = Math.min(yci, (int) ((getHeight() - transY) / scaleY / gridH));
-        // int ye = Math.min(yci, (int) ((getHeight() - transY) / scaleY / gridH) - 1);
+        int ye = Math.min(yci, (int) ((getHeight() - transY) / scaleY / gridH)); // - 1 test
         int xe = Math.min(xci, (int) ((getWidth() - transX) / scaleX / gridW));
         for (int y = ys; y <= ye; y++) {
             for (int x = xs; x <= xe; x++) {
@@ -135,7 +139,7 @@ public class SVGView extends View {
 
     private void drawText(Canvas canvas) {
         canvas.setMatrix(mTextMatrix);
-        double scale = roundToSignificantFigures(getValue(Matrix.MSCALE_X) / mInherentWidthScale * 100, 3);
+        double scale = roundToSignificantFigures(getValue(Matrix.MSCALE_X) / mInherentScale * 100, 3);
         String scaleStr = String.format("%s%%", scale);
         canvas.drawText(scaleStr.endsWith(".0%") ? scaleStr.replace(".0", "") : scaleStr, 10, getHeight() - 10, mTextPaint);
     }

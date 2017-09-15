@@ -38,6 +38,10 @@ public class SVG implements Serializable {
         }
     }
 
+    public float getInherentScale() {
+        return Math.min(width / viewBox.width, height / viewBox.height);
+    }
+
     @Override
     public String toString() {
         return "SVG{" +
