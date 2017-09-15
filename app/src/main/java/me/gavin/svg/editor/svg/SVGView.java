@@ -33,11 +33,12 @@ public class SVGView extends View {
 
     public SVGView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        SVGViewAttacher.attach(this);
         setLayerType(LAYER_TYPE_SOFTWARE, null);
         backgroundPaint = new Paint();
-        backgroundPaint.setColor(0xffffffff);
+        backgroundPaint.setColor(0xff888888);
         backgroundPaint1 = new Paint();
-        backgroundPaint1.setColor(0xffcccccc);
+        backgroundPaint1.setColor(0xff555555);
 
         mTextPaint = new Paint();
         mTextPaint.setTextSize(18f);
@@ -153,14 +154,6 @@ public class SVGView extends View {
 
     public boolean drawable() {
         return mSvg != null && mSvg.paths != null && !mSvg.paths.isEmpty();
-    }
-
-    public void setZoomable(boolean zoomable) {
-        if (zoomable) {
-            SVGViewAttacher.attach(this);
-        } else {
-            setOnTouchListener(null);
-        }
     }
 
     private float getValue(int whichValue) {
